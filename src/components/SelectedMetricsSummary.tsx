@@ -1,4 +1,4 @@
-import { MetricCount } from "../context/types";
+import { MetricWithStats } from "../context/types";
 
 const titleMap = {
   "(IP) Time in Communications per Patient per Day": "Communications",
@@ -10,7 +10,7 @@ const titleMap = {
 export function SelectedMetricsSummary({
   aggregateMetrics,
 }: {
-  aggregateMetrics: MetricCount;
+  aggregateMetrics: MetricWithStats;
 }) {
   return (
     <div className="selected-metrics-summary">
@@ -31,6 +31,12 @@ export function SelectedMetricsSummary({
         <span className="summary-label">Average Value:</span>
         <span className="summary-value">
           {aggregateMetrics.averageValue.toFixed(2)}
+        </span>
+      </div>
+      <div className="summary-item">
+        <span className="summary-label">Median Value:</span>
+        <span className="summary-value">
+          {aggregateMetrics.medianValue.toFixed(2)}
         </span>
       </div>
       <div className="summary-item">

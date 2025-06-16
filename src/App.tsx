@@ -1,8 +1,9 @@
 import "./App.css";
-import { FilteredMetricsList } from "./components/FilteredMetricsList";
 import { ParamSelect } from "./components/ParamSelect";
+import { ProviderCohorts } from "./components/ProviderCohorts";
 import { SelectedMetricsSummary } from "./components/SelectedMetricsSummary";
 import { MetricsProvider, useMetrics } from "./context/MetricsContext";
+import { ProvidersProvider } from "./context/ProvidersContext";
 
 function AppContent() {
   const {
@@ -46,13 +47,13 @@ function AppContent() {
           ))}
 
         {error && <p className="error">{error}</p>}
-
-        {loading ? (
-          <div className="loading-indicator">Loading metrics...</div>
-        ) : (
-          metrics.length > 0 && <FilteredMetricsList />
-        )}
       </header>
+      <ProvidersProvider
+        metrics={filteredMetrics}
+        aggregateMetrics={aggregateMetrics}
+      >
+        <ProviderCohorts />
+      </ProvidersProvider>
     </div>
   );
 }

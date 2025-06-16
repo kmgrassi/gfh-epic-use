@@ -1,8 +1,9 @@
-export interface MetricCount {
+export interface MetricWithStats {
   metric: string;
   count: number;
   id: number;
   averageValue: number;
+  medianValue: number;
   standardDeviation: number;
   values: MetricData[];
 }
@@ -13,13 +14,13 @@ export interface MetricParam {
 }
 
 export interface MetricsContextType {
-  metrics: MetricCount[];
-  filteredMetrics: MetricCount[];
+  metrics: MetricWithStats[];
+  filteredMetrics: MetricWithStats[];
   totalCount: number;
   loading: boolean;
   error: string | null;
   selectedParams: string[];
-  aggregateMetrics: MetricCount[];
+  aggregateMetrics: MetricWithStats[];
   setSelectedParams: (params: string[]) => void;
   refreshMetrics: () => Promise<void>;
 }

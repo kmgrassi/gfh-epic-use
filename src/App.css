@@ -438,10 +438,10 @@
   padding: 20px;
   margin: 20px 0;
   width: 80%;
-  max-width: 800px;
+  max-width: 1000px;
   border: 1px solid #61dafb;
   display: grid;
-  grid-template-columns: 250px 120px 120px 120px;
+  grid-template-columns: 250px 120px 120px 120px 120px;
   gap: 20px;
   align-items: center;
 }
@@ -468,6 +468,17 @@
   border-radius: 4px;
   min-width: 80px;
   text-align: center;
+}
+
+.summary-value.std-dev {
+  color: #ffd700;
+  font-weight: 600;
+}
+
+.summary-value.std-dev::before {
+  content: "±";
+  margin-right: 2px;
+  color: #ffd700;
 }
 
 .metric-stats {
@@ -539,4 +550,65 @@
   color: #e9ecef;
   font-size: 1.1rem;
   font-weight: 600;
+}
+
+.provider-cohorts {
+  padding: 20px;
+  background-color: #282c34;
+  border-radius: 8px;
+  border: 1px solid #61dafb;
+}
+
+.cohorts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.provider-card {
+  background-color: #333333;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border: 1px solid #404040;
+}
+
+.provider-card h3 {
+  color: #61dafb;
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.provider-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.provider-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: #3b4049;
+  border-radius: 4px;
+}
+
+.provider-name {
+  color: #e9ecef;
+  font-size: 0.9rem;
+}
+
+.provider-value {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.provider-value.top-value {
+  color: #4caf50;
+}
+
+.provider-value.low-value {
+  color: #f44336;
 }

@@ -1,4 +1,4 @@
-import { MetricCount, MetricData } from "../context/types";
+import { MetricData, MetricWithStats } from "../context/types";
 
 export const loadMetricsFile = async (): Promise<MetricData[]> => {
   try {
@@ -15,17 +15,27 @@ export const loadMetricsFile = async (): Promise<MetricData[]> => {
 
 const calculateStandardDeviation = (values: number[]): number => {
   const n = values.length;
-  if (n === 0) return 0;
+  if (n <= 1) return 0; // Need at least 2 values for standard deviation
 
   const mean = values.reduce((sum, val) => sum + val, 0) / n;
   const squaredDiffs = values.map((val) => Math.pow(val - mean, 2));
-  const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) / n;
+  const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) / (n - 1); // Using n-1 for sample standard deviation
 
   return Math.sqrt(variance);
 };
 
-export const getUniqueMetrics = (metricsData: MetricData[]): MetricCount[] => {
-  const metricMap = new Map<string, MetricCount>();
+const calculateMedian = (values: number[]): number => {
+  const sorted = values.sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+};
+
+export const getUniqueMetrics = (
+  metricsData: MetricData[]
+): MetricWithStats[] => {
+  const metricMap = new Map<string, MetricWithStats>();
 
   metricsData.forEach((metric) => {
     const key = `${metric.Metric} (${metric["Metric ID"]})`;
@@ -35,6 +45,7 @@ export const getUniqueMetrics = (metricsData: MetricData[]): MetricCount[] => {
         count: 0,
         id: metric["Metric ID"],
         averageValue: 0,
+        medianValue: 0,
         standardDeviation: 0,
         values: [],
       });
@@ -54,6 +65,7 @@ export const getUniqueMetrics = (metricsData: MetricData[]): MetricCount[] => {
       metric.standardDeviation = calculateStandardDeviation(
         metric.values.map((v) => v.Value)
       );
+      metric.medianValue = calculateMedian(metric.values.map((v) => v.Value));
     }
   });
 
@@ -62,14 +74,14 @@ export const getUniqueMetrics = (metricsData: MetricData[]): MetricCount[] => {
   );
 };
 
-export const loadAndGetMetrics = async (): Promise<MetricCount[]> => {
+export const loadAndGetMetrics = async (): Promise<MetricWithStats[]> => {
   const metricsData = await loadMetricsFile();
   return getUniqueMetrics(metricsData);
 };
 
 export const getAggregateMetrics = async (
   metricSubstrings: string[]
-): Promise<MetricCount[]> => {
+): Promise<MetricWithStats[]> => {
   const metricsData = await loadMetricsFile();
   const substringMatchCount = metricSubstrings.map((substring) => {
     const matchingMetrics = metricsData.filter((metric) =>
@@ -82,15 +94,48 @@ export const getAggregateMetrics = async (
         : 0;
     const standardDeviation = calculateStandardDeviation(values);
 
+    const medianValue = calculateMedian(values);
+
     return {
       metric: substring,
       count: matchingMetrics.length,
       id: 0,
       averageValue,
+      medianValue,
       standardDeviation,
       values: matchingMetrics,
     };
   });
 
   return substringMatchCount;
+};
+
+export const getProviderCohorts = (
+  metric: MetricWithStats
+): { top: MetricData[]; low: MetricData[] } => {
+  const top = [];
+  const low = [];
+
+  const useMedian = metric.averageValue > metric.medianValue;
+
+  for (const value of metric.values) {
+    if (useMedian) {
+      if (value.Value < metric.medianValue) {
+        top.push(value);
+      } else {
+        low.push(value);
+      }
+    } else {
+      if (value.Value < metric.averageValue) {
+        top.push(value);
+      } else {
+        low.push(value);
+      }
+    }
+  }
+
+  return {
+    top,
+    low,
+  };
 };

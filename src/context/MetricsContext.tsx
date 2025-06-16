@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getAggregateMetrics, loadAndGetMetrics } from "../utils/metricParser";
-import { MetricCount, MetricParam, MetricsContextType } from "./types";
+import { MetricParam, MetricsContextType, MetricWithStats } from "./types";
 
 const aggregateParams = [
   "(IP) Time in In Basket per Patient per Day",
@@ -24,13 +24,15 @@ const MetricsContext = createContext<MetricsContextType | undefined>(
 export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [metrics, setMetrics] = useState<MetricCount[]>([]);
+  const [metrics, setMetrics] = useState<MetricWithStats[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedParams, setSelectedParams] = useState<string[]>(
     possibleParams.map((param) => param.title)
   );
-  const [aggregateMetrics, setAggregateMetrics] = useState<MetricCount[]>([]);
+  const [aggregateMetrics, setAggregateMetrics] = useState<MetricWithStats[]>(
+    []
+  );
 
   const filteredMetrics =
     selectedParams.length > 0

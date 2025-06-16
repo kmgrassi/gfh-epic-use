@@ -1,7 +1,7 @@
-import { MetricCount } from "../context/types";
+import { MetricWithStats } from "../context/types";
 
 interface MetricsHeaderProps {
-  metrics: MetricCount[];
+  metrics: MetricWithStats[];
   defaultParams: { title: string; metricId: number }[];
 }
 
