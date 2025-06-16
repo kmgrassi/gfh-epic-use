@@ -38,13 +38,13 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setLoading(true);
       setError(null);
-      const [uniqueMetrics, aggregateMetrics] = await Promise.all([
+      const [uniqueMetrics, aggregate] = await Promise.all([
         loadAndGetMetrics(),
         getAggregateMetrics(aggregateParams),
       ]);
       setMetrics(uniqueMetrics);
 
-      setAggregateMetrics(aggregateMetrics);
+      setAggregateMetrics(aggregate);
     } catch (err) {
       setError("Failed to fetch metrics");
       console.error(err);

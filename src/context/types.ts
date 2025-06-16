@@ -20,6 +20,13 @@ export const possibleParams: MetricParam[] = [
   { title: METRIC_TITLES.COMMUNICATIONS, metricId: 2282 },
 ];
 
+export const titleMap = {
+  "(IP) Time in Communications per Patient per Day": "Communications",
+  "(IP) Time in Orders per Patient per Day": "Orders",
+  "(IP) Time in In Basket per Patient per Day": "In Basket",
+  "(IP) Time in Documentation per Patient per Day": "Documentation",
+};
+
 export interface MetricWithStats {
   metric: string;
   count: number;
