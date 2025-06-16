@@ -421,6 +421,17 @@
   text-align: center;
 }
 
+.summary-value.std-dev {
+  color: #ffd700;
+  font-weight: 600;
+}
+
+.summary-value.std-dev::before {
+  content: "±";
+  margin-right: 2px;
+  color: #ffd700;
+}
+
 .selected-metrics-summary {
   background-color: #282c34;
   border-radius: 8px;

@@ -35,7 +35,7 @@ export function SelectedMetricsSummary({
       </div>
       <div className="summary-item">
         <span className="summary-label">Average Std Dev:</span>
-        <span className="summary-value">
+        <span className="summary-value std-dev">
           {aggregateMetrics.standardDeviation.toFixed(2)}
         </span>
       </div>
