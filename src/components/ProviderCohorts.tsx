@@ -1,41 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { useProviders } from "../context/ProvidersContext";
-import { MetricData } from "../context/types";
-
-const ProviderCard: React.FC<{ title: string; providers: MetricData[] }> = ({
-  title,
-  providers,
-}) => {
-  const isTopPerformer = title.includes("Top");
-
-  // Sort providers based on whether they are top or low performers
-  const sortedProviders = [...providers].sort((a, b) => {
-    return isTopPerformer
-      ? a.Value - b.Value // Descending for top performers
-      : b.Value - a.Value; // Ascending for low performers
-  });
-
-  return (
-    <div className="provider-card">
-      <h3>{title}</h3>
-      <div className="provider-list">
-        {sortedProviders.map((provider, index) => (
-          <div key={index} className="provider-item">
-            <span className="provider-name">{provider["Clinician Name"]}</span>
-            <span
-              className={`provider-value ${
-                isTopPerformer ? "top-value" : "low-value"
-              }`}
-            >
-              {provider.Value.toFixed(2)}
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
+import { METRIC_TITLES } from "../context/types";
+import { ProviderCard } from "./ProviderCard";
 
 export const ProviderCohorts: React.FC = () => {
   const {
@@ -49,32 +16,76 @@ export const ProviderCohorts: React.FC = () => {
     lowCommunications,
   } = useProviders();
 
+  const [selectedMetric, setSelectedMetric] =
+    useState<keyof typeof METRIC_TITLES>("ORDERS");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const metricLabels = {
+    ORDERS: "Orders",
+    IN_BASKET: "In Basket",
+    DOCUMENTATION: "Documentation",
+    COMMUNICATIONS: "Communications",
+  };
+
+  const getProvidersForMetric = (metric: keyof typeof METRIC_TITLES) => {
+    switch (metric) {
+      case "ORDERS":
+        return { top: topOrders, low: lowOrders };
+      case "IN_BASKET":
+        return { top: topInBasket, low: lowInBasket };
+      case "DOCUMENTATION":
+        return { top: topDocumentation, low: lowDocumentation };
+      case "COMMUNICATIONS":
+        return { top: topCommunications, low: lowCommunications };
+    }
+  };
+
+  const handleMetricSelect = (metric: keyof typeof METRIC_TITLES) => {
+    setSelectedMetric(metric);
+    setIsDropdownOpen(false);
+  };
+
+  const { top, low } = getProvidersForMetric(selectedMetric);
+
   return (
     <div className="provider-cohorts">
+      <div className="metric-selector">
+        <button
+          className="dropdown-button"
+          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        >
+          {metricLabels[selectedMetric]} Metrics
+          <span className={`dropdown-arrow ${isDropdownOpen ? "open" : ""}`}>
+            ▼
+          </span>
+        </button>
+        {isDropdownOpen && (
+          <div className="dropdown-menu">
+            {Object.entries(metricLabels).map(([key, label]) => (
+              <button
+                key={key}
+                className={`dropdown-item ${
+                  selectedMetric === key ? "selected" : ""
+                }`}
+                onClick={() =>
+                  handleMetricSelect(key as keyof typeof METRIC_TITLES)
+                }
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       <div className="cohorts-grid">
-        <React.Fragment>
-          <ProviderCard
-            title={`Orders - Top Performers`}
-            providers={topOrders}
-          />
-          <ProviderCard
-            title={`Orders - Low Performers`}
-            providers={lowOrders}
-          />
-        </React.Fragment>
-
-        {/* {topInBasket.map((inBasket) => (
-          <React.Fragment key={inBasket.Metric}>
-            <ProviderCard
-              title={`${inBasket.Metric} - Top Performers`}
-              providers={inBasket.topProviders}
-            />
-            <ProviderCard
-              title={`${inBasket.Metric} - Low Performers`}
-              providers={inBasket.lowProviders}
-            />
-          </React.Fragment>
-        ))} */}
+        <ProviderCard
+          title={`${metricLabels[selectedMetric]} - Top Performers`}
+          providers={top}
+        />
+        <ProviderCard
+          title={`${metricLabels[selectedMetric]} - Low Performers`}
+          providers={low}
+        />
       </div>
     </div>
   );
