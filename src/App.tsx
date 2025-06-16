@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import { ParamSelect } from "./ParamSelect";
+import { ParamSelect } from "./components/ParamSelect";
 import { FilteredMetricsList } from "./components/FilteredMetricsList";
 import { SelectedMetricsSummary } from "./components/SelectedMetricsSummary";
 import { getUniqueMetrics } from "./utils/metricParser";
