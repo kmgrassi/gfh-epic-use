@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useProviders } from "../context/ProvidersContext";
 import { METRIC_TITLES } from "../context/types";
 import { ProviderCard } from "./ProviderCard";
+import { ProviderCardAll } from "./ProviderCardAll";
 
 export const ProviderCohorts: React.FC = () => {
   const {
@@ -14,21 +15,29 @@ export const ProviderCohorts: React.FC = () => {
     lowInBasket,
     lowDocumentation,
     lowCommunications,
+    topAll,
+    lowAll,
   } = useProviders();
 
-  const [selectedMetric, setSelectedMetric] =
-    useState<keyof typeof METRIC_TITLES>("ORDERS");
+  const [selectedMetric, setSelectedMetric] = useState<
+    keyof typeof METRIC_TITLES | "ALL"
+  >("ALL");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const metricLabels = {
+    ALL: "All",
     ORDERS: "Orders",
     IN_BASKET: "In Basket",
     DOCUMENTATION: "Documentation",
     COMMUNICATIONS: "Communications",
   };
 
-  const getProvidersForMetric = (metric: keyof typeof METRIC_TITLES) => {
+  const getProvidersForMetric = (
+    metric: keyof typeof METRIC_TITLES | "ALL"
+  ) => {
     switch (metric) {
+      case "ALL":
+        return { top: topAll, low: lowAll };
       case "ORDERS":
         return { top: topOrders, low: lowOrders };
       case "IN_BASKET":
@@ -78,14 +87,29 @@ export const ProviderCohorts: React.FC = () => {
         )}
       </div>
       <div className="cohorts-grid">
-        <ProviderCard
-          title={`${metricLabels[selectedMetric]} - Top Performers`}
-          providers={top}
-        />
-        <ProviderCard
-          title={`${metricLabels[selectedMetric]} - Low Performers`}
-          providers={low}
-        />
+        {metricLabels[selectedMetric] === "ALL" ? (
+          <>
+            <ProviderCardAll
+              title={`${metricLabels[selectedMetric]} - Top Performers`}
+              providers={top}
+            />
+            <ProviderCardAll
+              title={`${metricLabels[selectedMetric]} - Low Performers`}
+              providers={low}
+            />
+          </>
+        ) : (
+          <>
+            <ProviderCard
+              title={`${metricLabels[selectedMetric]} - Top Performers`}
+              providers={top}
+            />
+            <ProviderCard
+              title={`${metricLabels[selectedMetric]} - Low Performers`}
+              providers={low}
+            />
+          </>
+        )}
       </div>
     </div>
   );

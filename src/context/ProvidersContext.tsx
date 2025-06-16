@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { getProviderCohorts } from "../utils/metricParser";
 import { METRIC_TITLES, MetricData, MetricWithStats } from "./types";
 
@@ -11,6 +17,8 @@ interface ProvidersContextType {
   lowDocumentation: MetricData[];
   topCommunications: MetricData[];
   lowCommunications: MetricData[];
+  topAll: MetricData[];
+  lowAll: MetricData[];
 }
 
 const ProvidersContext = createContext<ProvidersContextType | undefined>(
@@ -76,6 +84,25 @@ export const ProvidersProvider: React.FC<{
     });
   }, [metrics, aggregateMetrics]);
 
+  // Use useMemo to compute combined arrays only when individual arrays change
+  const topAll = useMemo(() => {
+    return [
+      ...topOrders,
+      ...topInBasket,
+      ...topDocumentation,
+      ...topCommunications,
+    ];
+  }, [topOrders, topInBasket, topDocumentation, topCommunications]);
+
+  const lowAll = useMemo(() => {
+    return [
+      ...lowOrders,
+      ...lowInBasket,
+      ...lowDocumentation,
+      ...lowCommunications,
+    ];
+  }, [lowOrders, lowInBasket, lowDocumentation, lowCommunications]);
+
   const value = {
     topOrders,
     lowOrders,
@@ -85,6 +112,8 @@ export const ProvidersProvider: React.FC<{
     lowDocumentation,
     topCommunications,
     lowCommunications,
+    topAll,
+    lowAll,
   };
 
   return (
