@@ -565,6 +565,12 @@
   gap: 20px;
 }
 
+.cohorts-grid.centered {
+  justify-content: center;
+  grid-template-columns: minmax(300px, 600px);
+  justify-items: center;
+}
+
 .provider-card {
   background-color: #333333;
   border-radius: 6px;

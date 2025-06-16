@@ -98,7 +98,7 @@ export const ProviderCohorts: React.FC = () => {
           </div>
         )}
       </div>
-      <div className="cohorts-grid">
+      <div className={`cohorts-grid ${selectedMetric === "MIXED" ? "centered" : ""}`}>
         {selectedMetric === "ALL" ? (
           <>
             <ProviderCardAll
