@@ -1,9 +1,5 @@
 import React from "react";
-
-interface AggregateMetricCount {
-  metric: string;
-  count: number;
-}
+import { AggregateMetricCount } from "../context/types";
 
 interface AggregateMetricsDisplayProps {
   aggregateCounts: AggregateMetricCount[];
@@ -12,16 +8,22 @@ interface AggregateMetricsDisplayProps {
 export const AggregateMetricsDisplay: React.FC<
   AggregateMetricsDisplayProps
 > = ({ aggregateCounts }) => {
-  if (!aggregateCounts.length) return null;
-
   return (
     <div className="aggregate-metrics">
-      <h3>Aggregate Metrics</h3>
+      <h2>Aggregate Metrics</h2>
       <div className="aggregate-metrics-grid">
-        {aggregateCounts.map(({ metric, count }) => (
-          <div key={metric} className="aggregate-metric-card">
-            <div className="metric-name">{metric}</div>
-            <div className="metric-count">{count.toLocaleString()} matches</div>
+        {aggregateCounts.map((count) => (
+          <div key={count.metric} className="aggregate-metric-item">
+            <h3>{count.metric}</h3>
+            <div className="metric-stats">
+              <div className="metric-count">Count: {count.count}</div>
+              <div className="metric-value">
+                Average: {count.averageValue.toFixed(2)}
+              </div>
+              <div className="metric-std-dev">
+                Std Dev: {count.standardDeviation.toFixed(2)}
+              </div>
+            </div>
           </div>
         ))}
       </div>

@@ -1,118 +1,107 @@
-import { MetricCount } from "../context/types";
-
-interface MetricData {
-  "EMP CID": string;
-  "SER CID": string;
-  "Clinician Name": string;
-  "Clinician Type": string;
-  "Login Service Area": string;
-  "Login Department": string;
-  Specialty: string;
-  "User Type": string;
-  "Reporting Period Start Date": string;
-  "Reporting Period End Date": string;
-  Metric: string;
-  Numerator: number;
-  Denominator: number;
-  Value: number;
-  "Metric ID": number;
-}
+import { MetricCount, MetricData } from "../context/types";
 
 export const loadMetricsFile = async (): Promise<MetricData[]> => {
   try {
     const response = await fetch("/SignalDownload_25-05-May.json");
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      throw new Error("Failed to load metrics file");
     }
     return await response.json();
   } catch (error) {
     console.error("Error loading metrics file:", error);
-    return [];
+    throw error;
   }
 };
 
-const calculateStandardDeviation = (values: number[], mean: number): number => {
-  const squareDiffs = values.map((value) => {
-    const diff = value - mean;
-    return diff * diff;
-  });
-  const avgSquareDiff =
-    squareDiffs.reduce((sum, value) => sum + value, 0) / values.length;
-  return Math.sqrt(avgSquareDiff);
+const calculateStandardDeviation = (values: number[]): number => {
+  const n = values.length;
+  if (n === 0) return 0;
+
+  const mean = values.reduce((sum, val) => sum + val, 0) / n;
+  const squaredDiffs = values.map((val) => Math.pow(val - mean, 2));
+  const variance = squaredDiffs.reduce((sum, val) => sum + val, 0) / n;
+
+  return Math.sqrt(variance);
 };
 
-export const getUniqueMetrics = async (): Promise<MetricCount[]> => {
-  const metricsData = await loadMetricsFile();
-  const metricMap = new Map<
-    string,
-    { count: number; id: number; values: number[] }
-  >();
+export const getUniqueMetrics = (metricsData: MetricData[]): MetricCount[] => {
+  const metricMap = new Map<string, MetricCount>();
 
-  metricsData.forEach((entry) => {
-    if (entry.Metric) {
-      const current = metricMap.get(entry.Metric) || {
+  metricsData.forEach((metric) => {
+    const key = `${metric.Metric} (${metric["Metric ID"]})`;
+    if (!metricMap.has(key)) {
+      metricMap.set(key, {
+        metric: metric.Metric,
         count: 0,
-        id: entry["Metric ID"],
+        id: metric["Metric ID"],
+        averageValue: 0,
+        standardDeviation: 0,
         values: [],
-      };
-      metricMap.set(entry.Metric, {
-        count: current.count + 1,
-        id: entry["Metric ID"],
-        values: [...current.values, entry.Value],
       });
     }
+
+    const current = metricMap.get(key)!;
+    current.count++;
+    current.values?.push(metric.Value);
   });
 
-  return Array.from(metricMap.entries())
-    .map(([metric, { count, id, values }]) => {
-      const averageValue =
-        values.reduce((sum, val) => sum + val, 0) / values.length;
-      const standardDeviation = calculateStandardDeviation(
-        values,
-        averageValue
-      );
-      return {
-        metric,
-        count,
-        id,
-        averageValue,
-        standardDeviation,
-      };
-    })
-    .sort((a, b) => a.metric.localeCompare(b.metric));
+  // Calculate statistics for each metric
+  metricMap.forEach((metric) => {
+    if (metric.values && metric.values.length > 0) {
+      metric.averageValue =
+        metric.values.reduce((sum, val) => sum + val, 0) / metric.values.length;
+      metric.standardDeviation = calculateStandardDeviation(metric.values);
+    }
+    delete metric.values; // Remove the values array as it's no longer needed
+  });
+
+  return Array.from(metricMap.values()).sort((a, b) =>
+    a.metric.localeCompare(b.metric)
+  );
+};
+
+export const loadAndGetMetrics = async (): Promise<MetricCount[]> => {
+  const metricsData = await loadMetricsFile();
+  return getUniqueMetrics(metricsData);
 };
 
 export const getAggregateMetrics = async (
   metricSubstrings: string[]
 ): Promise<{
   aggregateMetrics: MetricData[];
-  substringMatchCount: { metric: string; count: number }[];
+  substringMatchCount: {
+    metric: string;
+    count: number;
+    averageValue: number;
+    standardDeviation: number;
+  }[];
 }> => {
   const metricsData = await loadMetricsFile();
+  const substringMatchCount = metricSubstrings.map((substring) => {
+    const matchingMetrics = metricsData.filter((metric) =>
+      metric.Metric.includes(substring)
+    );
+    const values = matchingMetrics.map((m) => m.Value);
+    const averageValue =
+      values.length > 0
+        ? values.reduce((sum, val) => sum + val, 0) / values.length
+        : 0;
+    const standardDeviation = calculateStandardDeviation(values);
 
-  // Initialize substringMatchCount with all substrings and zero counts
-  const substringMatchCount = metricSubstrings.map((substring) => ({
-    metric: substring,
-    count: 0,
-  }));
-
-  const aggregateMetrics = metricsData.filter((metric) => {
-    const found = metricSubstrings.some((substring) => {
-      const match = metric.Metric?.includes(substring);
-      if (match) {
-        // Find and increment the count for this substring
-        const matchCount = substringMatchCount.find(
-          (m) => m.metric === substring
-        );
-        if (matchCount) {
-          matchCount.count++;
-        }
-      }
-      return match;
-    });
-
-    return found;
+    return {
+      metric: substring,
+      count: matchingMetrics.length,
+      averageValue,
+      standardDeviation,
+    };
   });
 
-  return { aggregateMetrics, substringMatchCount };
+  const aggregateMetrics = metricsData.filter((metric) =>
+    metricSubstrings.some((substring) => metric.Metric.includes(substring))
+  );
+
+  return {
+    aggregateMetrics,
+    substringMatchCount,
+  };
 };

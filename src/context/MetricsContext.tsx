@@ -1,8 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getAggregateMetrics, getUniqueMetrics } from "../utils/metricParser";
+import {
+  getAggregateMetrics,
+  getUniqueMetrics,
+  loadAndGetMetrics,
+} from "../utils/metricParser";
 import {
   AggregateMetricCount,
   MetricCount,
+  MetricData,
   MetricParam,
   MetricsContextType,
 } from "./types";
@@ -35,16 +40,19 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
     AggregateMetricCount[]
   >([]);
 
+  const [aggregateMetrics, setAggregateMetrics] = useState<MetricData[]>([]);
+
   const fetchMetrics = async () => {
     try {
       setLoading(true);
       setError(null);
       const [uniqueMetrics, aggregateMetrics] = await Promise.all([
-        getUniqueMetrics(),
+        loadAndGetMetrics(),
         getAggregateMetrics(aggregateParams),
       ]);
       setMetrics(uniqueMetrics);
       setAggregateCounts(aggregateMetrics.substringMatchCount);
+      setAggregateMetrics(aggregateMetrics.aggregateMetrics);
     } catch (err) {
       setError("Failed to fetch metrics");
       console.error(err);
@@ -56,6 +64,12 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     fetchMetrics();
   }, []);
+
+  useEffect(() => {
+    if (aggregateMetrics.length > 0) {
+      getUniqueMetrics(aggregateMetrics);
+    }
+  }, [aggregateMetrics]);
 
   const value = {
     metrics,
