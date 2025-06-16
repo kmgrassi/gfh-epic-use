@@ -427,11 +427,36 @@
   padding: 20px;
   margin: 20px 0;
   width: 80%;
-  max-width: 600px;
+  max-width: 800px;
   border: 1px solid #61dafb;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 250px 120px 120px 120px;
   gap: 20px;
+  align-items: center;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.summary-label {
+  color: #61dafb;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.summary-value {
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 500;
+  background-color: #3b4049;
+  padding: 4px 12px;
+  border-radius: 4px;
+  min-width: 80px;
+  text-align: center;
 }
 
 .metric-stats {
