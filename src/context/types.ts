@@ -1,3 +1,25 @@
+export const METRIC_TITLES = {
+  ORDERS: "(IP) Time in Orders per Patient per Day",
+  IN_BASKET: "(IP) Time in In Basket per Patient per Day",
+  DOCUMENTATION: "(IP) Time in Documentation per Patient per Day",
+  COMMUNICATIONS: "(IP) Time in Communications per Patient per Day",
+} as const;
+
+export const aggregateParams = [
+  METRIC_TITLES.IN_BASKET,
+  METRIC_TITLES.DOCUMENTATION,
+];
+
+export const possibleParams: MetricParam[] = [
+  { title: METRIC_TITLES.DOCUMENTATION, metricId: null },
+  { title: METRIC_TITLES.ORDERS, metricId: 2224 },
+  {
+    title: METRIC_TITLES.IN_BASKET,
+    metricId: null,
+  },
+  { title: METRIC_TITLES.COMMUNICATIONS, metricId: 2282 },
+];
+
 export interface MetricWithStats {
   metric: string;
   count: number;

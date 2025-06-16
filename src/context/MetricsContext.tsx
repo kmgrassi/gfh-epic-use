@@ -1,21 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { getAggregateMetrics, loadAndGetMetrics } from "../utils/metricParser";
-import { MetricParam, MetricsContextType, MetricWithStats } from "./types";
-
-const aggregateParams = [
-  "(IP) Time in In Basket per Patient per Day",
-  "(IP) Time in Documentation per Patient per Day",
-];
-
-export const possibleParams: MetricParam[] = [
-  { title: "(IP) Time in Documentation per Patient per Day", metricId: null },
-  { title: "(IP) Time in Orders per Patient per Day", metricId: 2224 },
-  {
-    title: "(IP) Time in In Basket per Patient per Day",
-    metricId: null,
-  },
-  { title: "(IP) Time in Communications per Patient per Day", metricId: 2282 },
-];
+import {
+  aggregateParams,
+  MetricsContextType,
+  MetricWithStats,
+  possibleParams,
+} from "./types";
 
 const MetricsContext = createContext<MetricsContextType | undefined>(
   {} as MetricsContextType
@@ -91,3 +81,4 @@ export const useMetrics = () => {
   }
   return context;
 };
+export { possibleParams };

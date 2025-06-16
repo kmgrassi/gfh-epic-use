@@ -1,80 +1,94 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { getProviderCohorts } from "../utils/metricParser";
-import { possibleParams } from "./MetricsContext";
-import { MetricData, MetricWithStats } from "./types";
+import { METRIC_TITLES, MetricData, MetricWithStats } from "./types";
 
 interface ProvidersContextType {
   topOrders: MetricData[];
-  topInBasket: MetricData[];
-  topDocumentation: MetricData[];
-  topCommunications: MetricData[];
   lowOrders: MetricData[];
+  topInBasket: MetricData[];
   lowInBasket: MetricData[];
+  topDocumentation: MetricData[];
   lowDocumentation: MetricData[];
+  topCommunications: MetricData[];
   lowCommunications: MetricData[];
 }
 
-export const ProvidersContext = createContext<ProvidersContextType | undefined>(
+const ProvidersContext = createContext<ProvidersContextType | undefined>(
   undefined
 );
 
-export const ProvidersProvider = ({
-  metrics,
-  aggregateMetrics,
-  children,
-}: {
+export const ProvidersProvider: React.FC<{
+  children: React.ReactNode;
   metrics: MetricWithStats[];
   aggregateMetrics: MetricWithStats[];
-  children: React.ReactNode;
-}) => {
-  console.log("metrics", metrics);
-  console.log("aggregateMetrics", aggregateMetrics);
-
+}> = ({ children, metrics, aggregateMetrics }) => {
   const [topOrders, setTopOrders] = useState<MetricData[]>([]);
-  const [topInBasket, setTopInBasket] = useState<MetricData[]>([]);
-  const [topDocumentation, setTopDocumentation] = useState<MetricData[]>([]);
-  const [topCommunications, setTopCommunications] = useState<MetricData[]>([]);
-
   const [lowOrders, setLowOrders] = useState<MetricData[]>([]);
+  const [topInBasket, setTopInBasket] = useState<MetricData[]>([]);
   const [lowInBasket, setLowInBasket] = useState<MetricData[]>([]);
+  const [topDocumentation, setTopDocumentation] = useState<MetricData[]>([]);
   const [lowDocumentation, setLowDocumentation] = useState<MetricData[]>([]);
+  const [topCommunications, setTopCommunications] = useState<MetricData[]>([]);
   const [lowCommunications, setLowCommunications] = useState<MetricData[]>([]);
 
-  useEffect(() => {
-    possibleParams.forEach((param) => {
-      const { title } = param;
+  const updateProviderCohorts = (
+    metric: MetricWithStats,
+    setters: {
+      setTop: (data: MetricData[]) => void;
+      setLow: (data: MetricData[]) => void;
+    }
+  ) => {
+    const { top, low } = getProviderCohorts(metric);
+    setters.setTop(top);
+    setters.setLow(low);
+  };
 
-      if (title === "(IP) Time in Orders per Patient per Day") {
-        const foundOrdersMetrics = metrics.find(
-          (item) => item.metric === title
-        );
-        if (!foundOrdersMetrics) return;
-        const topLow = getProviderCohorts(foundOrdersMetrics);
-        setTopOrders(topLow.top);
-        setLowOrders(topLow.low);
-      } else if (title === "(IP) Time in In Basket per Patient per Day") {
-        setTopInBasket(metrics.map((m) => m.values).flat());
-      } else if (title === "(IP) Time in Documentation per Patient per Day") {
-        setTopDocumentation(metrics.map((m) => m.values).flat());
-      } else if (title === "(IP) Time in Communications per Patient per Day") {
-        setTopCommunications(metrics.map((m) => m.values).flat());
+  useEffect(() => {
+    const allMetrics = [...metrics, ...aggregateMetrics];
+
+    allMetrics.forEach((metric) => {
+      switch (metric.metric) {
+        case METRIC_TITLES.ORDERS:
+          updateProviderCohorts(metric, {
+            setTop: setTopOrders,
+            setLow: setLowOrders,
+          });
+          break;
+        case METRIC_TITLES.IN_BASKET:
+          updateProviderCohorts(metric, {
+            setTop: setTopInBasket,
+            setLow: setLowInBasket,
+          });
+          break;
+        case METRIC_TITLES.DOCUMENTATION:
+          updateProviderCohorts(metric, {
+            setTop: setTopDocumentation,
+            setLow: setLowDocumentation,
+          });
+          break;
+        case METRIC_TITLES.COMMUNICATIONS:
+          updateProviderCohorts(metric, {
+            setTop: setTopCommunications,
+            setLow: setLowCommunications,
+          });
+          break;
       }
     });
-  }, [aggregateMetrics, metrics]);
+  }, [metrics, aggregateMetrics]);
+
+  const value = {
+    topOrders,
+    lowOrders,
+    topInBasket,
+    lowInBasket,
+    topDocumentation,
+    lowDocumentation,
+    topCommunications,
+    lowCommunications,
+  };
 
   return (
-    <ProvidersContext.Provider
-      value={{
-        topOrders,
-        topInBasket,
-        topDocumentation,
-        topCommunications,
-        lowOrders,
-        lowInBasket,
-        lowDocumentation,
-        lowCommunications,
-      }}
-    >
+    <ProvidersContext.Provider value={value}>
       {children}
     </ProvidersContext.Provider>
   );
@@ -82,7 +96,7 @@ export const ProvidersProvider = ({
 
 export const useProviders = () => {
   const context = useContext(ProvidersContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error("useProviders must be used within a ProvidersProvider");
   }
   return context;

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { possibleParams } from "../context/MetricsContext";
+import { possibleParams } from "../context/types";
 
 interface ParamSelectProps {
   selectedParams: string[];
