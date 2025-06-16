@@ -1,10 +1,4 @@
-import React from "react";
-
-interface MetricCount {
-  metric: string;
-  count: number;
-  id: number;
-}
+import { MetricCount } from "../context/types";
 
 interface MetricsHeaderProps {
   metrics: MetricCount[];

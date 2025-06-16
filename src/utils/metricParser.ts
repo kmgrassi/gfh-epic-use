@@ -1,5 +1,4 @@
-import fs from "fs";
-import path from "path";
+import { MetricCount } from "../context/types";
 
 interface MetricData {
   "EMP CID": string;
@@ -17,14 +16,6 @@ interface MetricData {
   Denominator: number;
   Value: number;
   "Metric ID": number;
-}
-
-interface MetricCount {
-  metric: string;
-  count: number;
-  id: number;
-  averageValue: number;
-  standardDeviation: number;
 }
 
 export const loadMetricsFile = async (): Promise<MetricData[]> => {

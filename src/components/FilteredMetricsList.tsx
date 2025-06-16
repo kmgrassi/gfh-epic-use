@@ -1,22 +1,8 @@
-import React from "react";
+import { useMetrics } from "../context/MetricsContext";
 
-interface MetricCount {
-  metric: string;
-  count: number;
-  id: number;
-  averageValue: number;
-  standardDeviation: number;
-}
+export function FilteredMetricsList() {
+  const { metrics, selectedParams } = useMetrics();
 
-interface FilteredMetricsListProps {
-  metrics: MetricCount[];
-  selectedParams: string[];
-}
-
-export function FilteredMetricsList({
-  metrics,
-  selectedParams,
-}: FilteredMetricsListProps) {
   const filteredMetrics =
     selectedParams.length > 0
       ? metrics.filter((metric) => selectedParams.includes(metric.metric))
