@@ -1,5 +1,4 @@
 import "./App.css";
-import { AggregateMetricsDisplay } from "./components/AggregateMetricsDisplay";
 import { FilteredMetricsList } from "./components/FilteredMetricsList";
 import { ParamSelect } from "./components/ParamSelect";
 import { SelectedMetricsSummary } from "./components/SelectedMetricsSummary";
@@ -13,6 +12,7 @@ function AppContent() {
     selectedParams,
     aggregateCounts,
     setSelectedParams,
+    filteredMetrics,
   } = useMetrics();
 
   return (
@@ -23,14 +23,27 @@ function AppContent() {
           selectedParams={selectedParams}
           onParamsChange={setSelectedParams}
         />
-
+        {/* 
         {!loading && metrics.length > 0 && (
           <AggregateMetricsDisplay aggregateCounts={aggregateCounts} />
-        )}
+        )} */}
+        {!loading &&
+          filteredMetrics.length > 0 &&
+          filteredMetrics.map((metric) => (
+            <SelectedMetricsSummary
+              key={metric.metric}
+              aggregateCounts={metric}
+            />
+          ))}
 
-        {!loading && metrics.length > 0 && selectedParams.length > 0 && (
-          <SelectedMetricsSummary />
-        )}
+        {!loading &&
+          aggregateCounts.length > 0 &&
+          aggregateCounts.map((aggregateCount) => (
+            <SelectedMetricsSummary
+              key={aggregateCount.metric}
+              aggregateCounts={aggregateCount}
+            />
+          ))}
 
         {error && <p className="error">{error}</p>}
 

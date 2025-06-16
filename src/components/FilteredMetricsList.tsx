@@ -1,17 +1,7 @@
 import { useMetrics } from "../context/MetricsContext";
 
 export function FilteredMetricsList() {
-  const { metrics, selectedParams } = useMetrics();
-
-  const filteredMetrics =
-    selectedParams.length > 0
-      ? metrics.filter((metric) => selectedParams.includes(metric.metric))
-      : metrics;
-
-  const totalCount = filteredMetrics.reduce(
-    (sum, metric) => sum + metric.count,
-    0
-  );
+  const { filteredMetrics, totalCount, selectedParams } = useMetrics();
 
   return (
     <div className="metrics-container">

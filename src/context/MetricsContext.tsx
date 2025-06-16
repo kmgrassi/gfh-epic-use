@@ -27,7 +27,9 @@ export const possibleParams: MetricParam[] = [
   { title: "(IP) Time in Communications per Patient per Day", metricId: 2282 },
 ];
 
-const MetricsContext = createContext<MetricsContextType | undefined>(undefined);
+const MetricsContext = createContext<MetricsContextType | undefined>(
+  {} as MetricsContextType
+);
 
 export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -35,10 +37,22 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [metrics, setMetrics] = useState<MetricCount[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedParams, setSelectedParams] = useState<string[]>([]);
+  const [selectedParams, setSelectedParams] = useState<string[]>(
+    possibleParams.map((param) => param.title)
+  );
   const [aggregateCounts, setAggregateCounts] = useState<
     AggregateMetricCount[]
   >([]);
+
+  const filteredMetrics =
+    selectedParams.length > 0
+      ? metrics.filter((metric) => selectedParams.includes(metric.metric))
+      : metrics;
+
+  const totalCount = filteredMetrics.reduce(
+    (sum, metric) => sum + metric.count,
+    0
+  );
 
   const [aggregateMetrics, setAggregateMetrics] = useState<MetricData[]>([]);
 
@@ -79,6 +93,8 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
     aggregateCounts,
     setSelectedParams,
     refreshMetrics: fetchMetrics,
+    filteredMetrics,
+    totalCount,
   };
 
   return (

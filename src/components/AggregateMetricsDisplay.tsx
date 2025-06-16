@@ -5,6 +5,13 @@ interface AggregateMetricsDisplayProps {
   aggregateCounts: AggregateMetricCount[];
 }
 
+const titleMap = {
+  "(IP) Time in Communications per Patient per Day": "Communications",
+  "(IP) Time in Orders per Patient per Day": "Orders",
+  "(IP) Time in In Basket per Patient per Day": "In Basket",
+  "(IP) Time in Documentation per Patient per Day": "Documentation",
+};
+
 export const AggregateMetricsDisplay: React.FC<
   AggregateMetricsDisplayProps
 > = ({ aggregateCounts }) => {
@@ -14,7 +21,9 @@ export const AggregateMetricsDisplay: React.FC<
       <div className="aggregate-metrics-grid">
         {aggregateCounts.map((count) => (
           <div key={count.metric} className="aggregate-metric-item">
-            <h3>{count.metric}</h3>
+            <h3>
+              {titleMap[count?.metric as keyof typeof titleMap] || count.metric}
+            </h3>
             <div className="metric-stats">
               <div className="metric-count">Count: {count.count}</div>
               <div className="metric-value">

@@ -21,6 +21,8 @@ export interface AggregateMetricCount {
 
 export interface MetricsContextType {
   metrics: MetricCount[];
+  filteredMetrics: MetricCount[];
+  totalCount: number;
   loading: boolean;
   error: string | null;
   selectedParams: string[];
