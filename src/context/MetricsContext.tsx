@@ -1,7 +1,12 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { getAggregateMetrics, loadAndGetMetrics } from "../utils/metricParser";
+import {
+  getAggregateMetrics,
+  getMetricsData,
+  getUniqueMetrics,
+} from "../utils/metricParser";
 import {
   aggregateParams,
+  MetricData,
   MetricsContextType,
   MetricWithStats,
   possibleParams,
@@ -23,6 +28,9 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [aggregateMetrics, setAggregateMetrics] = useState<MetricWithStats[]>(
     []
   );
+  const [uploadedMetricsData, setUploadedMetricsData] = useState<
+    MetricData[] | null
+  >(null);
 
   const filteredMetrics =
     selectedParams.length > 0
@@ -38,12 +46,16 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       setLoading(true);
       setError(null);
-      const [uniqueMetrics, aggregate] = await Promise.all([
-        loadAndGetMetrics(),
-        getAggregateMetrics(aggregateParams),
-      ]);
-      setMetrics(uniqueMetrics);
 
+      // Get the metrics data (either uploaded or default)
+      const metricsData = await getMetricsData(uploadedMetricsData);
+
+      const [uniqueMetrics, aggregate] = await Promise.all([
+        Promise.resolve(getUniqueMetrics(metricsData)),
+        getAggregateMetrics(aggregateParams, metricsData),
+      ]);
+
+      setMetrics(uniqueMetrics);
       setAggregateMetrics(aggregate);
     } catch (err) {
       setError("Failed to fetch metrics");
@@ -53,9 +65,20 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const uploadData = async (data: MetricData[]) => {
+    // Set the uploaded data in state - useEffect will handle processing
+    setUploadedMetricsData(data);
+  };
+
+  const clearData = () => {
+    setUploadedMetricsData(null);
+    // useEffect will trigger fetchMetrics when uploadedMetricsData changes
+  };
+
   useEffect(() => {
     fetchMetrics();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [uploadedMetricsData]);
 
   const value = {
     metrics,
@@ -67,6 +90,8 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
     refreshMetrics: fetchMetrics,
     filteredMetrics,
     totalCount,
+    uploadData,
+    clearData,
   };
 
   return (

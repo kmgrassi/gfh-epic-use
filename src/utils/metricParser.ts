@@ -1,6 +1,6 @@
 import { MetricData, MetricWithStats } from "../context/types";
 
-export const loadMetricsFile = async (): Promise<MetricData[]> => {
+export const loadDefaultMetricsFile = async (): Promise<MetricData[]> => {
   try {
     const response = await fetch("/SignalDownload_25-05-May.json");
     if (!response.ok) {
@@ -11,6 +11,15 @@ export const loadMetricsFile = async (): Promise<MetricData[]> => {
     console.error("Error loading metrics file:", error);
     throw error;
   }
+};
+
+export const getMetricsData = async (uploadedData: MetricData[] | null): Promise<MetricData[]> => {
+  // If we have uploaded data, use it instead of fetching from file
+  if (uploadedData) {
+    return uploadedData;
+  }
+  
+  return await loadDefaultMetricsFile();
 };
 
 const calculateStandardDeviation = (values: number[]): number => {
@@ -74,24 +83,18 @@ export const getUniqueMetrics = (
   );
 };
 
-export const loadAndGetMetrics = async (): Promise<MetricWithStats[]> => {
-  const metricsData = await loadMetricsFile();
-  return getUniqueMetrics(metricsData);
-};
-
 export const getAggregateMetrics = async (
-  metricSubstrings: string[]
+  metricSubstrings: string[],
+  metricsData: MetricData[]
 ): Promise<MetricWithStats[]> => {
-  const metricsData = await loadMetricsFile();
-  
   const aggregateMetrics = metricSubstrings.map((substring) => {
     const matchingMetrics = metricsData.filter((metric) =>
       metric.Metric.includes(substring)
     );
-    
+
     // Group by provider (EMP CID + SER CID combination) to get per-provider aggregates
     const providerGroups = new Map<string, MetricData[]>();
-    
+
     matchingMetrics.forEach((metric) => {
       const providerKey = `${metric["EMP CID"]}-${metric["SER CID"]}`;
       if (!providerGroups.has(providerKey)) {
@@ -99,14 +102,14 @@ export const getAggregateMetrics = async (
       }
       providerGroups.get(providerKey)!.push(metric);
     });
-    
+
     // Calculate aggregate value per provider (sum of all subcategory values)
     const providerAggregateValues: MetricData[] = [];
-    
+
     providerGroups.forEach((metrics, providerKey) => {
       const totalValue = metrics.reduce((sum, metric) => sum + metric.Value, 0);
       const firstMetric = metrics[0];
-      
+
       // Create an aggregate metric entry for this provider
       const aggregateEntry: MetricData = {
         ...firstMetric,
@@ -114,10 +117,10 @@ export const getAggregateMetrics = async (
         Value: totalValue,
         "Metric ID": 0, // Aggregate metrics don't have specific IDs
       };
-      
+
       providerAggregateValues.push(aggregateEntry);
     });
-    
+
     const values = providerAggregateValues.map((m) => m.Value);
     const averageValue =
       values.length > 0
@@ -175,15 +178,18 @@ export const getMixedProviders = (
   allMetrics: MetricWithStats[]
 ): MetricData[] => {
   // Group all providers across all metrics
-  const providerMetricsMap = new Map<string, {
-    provider: MetricData;
-    topMetrics: string[];
-    lowMetrics: string[];
-  }>();
+  const providerMetricsMap = new Map<
+    string,
+    {
+      provider: MetricData;
+      topMetrics: string[];
+      lowMetrics: string[];
+    }
+  >();
 
   allMetrics.forEach((metric) => {
     const { top, low } = getProviderCohorts(metric);
-    
+
     // Track top performers
     top.forEach((provider) => {
       const key = `${provider["EMP CID"]}-${provider["SER CID"]}`;
@@ -191,7 +197,7 @@ export const getMixedProviders = (
         providerMetricsMap.set(key, {
           provider,
           topMetrics: [],
-          lowMetrics: []
+          lowMetrics: [],
         });
       }
       providerMetricsMap.get(key)!.topMetrics.push(metric.metric);
@@ -204,7 +210,7 @@ export const getMixedProviders = (
         providerMetricsMap.set(key, {
           provider,
           topMetrics: [],
-          lowMetrics: []
+          lowMetrics: [],
         });
       }
       providerMetricsMap.get(key)!.lowMetrics.push(metric.metric);

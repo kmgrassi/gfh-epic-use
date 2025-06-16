@@ -1,4 +1,5 @@
 import "./App.css";
+import { FileUpload } from "./components/FileUpload";
 import { ParamSelect } from "./components/ParamSelect";
 import { ProviderCohorts } from "./components/ProviderCohorts";
 import { SelectedMetricsSummary } from "./components/SelectedMetricsSummary";
@@ -7,19 +8,21 @@ import { ProvidersProvider } from "./context/ProvidersContext";
 
 function AppContent() {
   const {
-    metrics,
     loading,
     error,
     selectedParams,
     aggregateMetrics,
     setSelectedParams,
     filteredMetrics,
+    uploadData,
   } = useMetrics();
 
   return (
     <div className="App">
       <header className="App-header">
         <h1>Metrics Viewer</h1>
+        <FileUpload onDataUploaded={uploadData} loading={loading} />
+
         <ParamSelect
           selectedParams={selectedParams}
           onParamsChange={setSelectedParams}

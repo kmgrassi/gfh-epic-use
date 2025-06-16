@@ -52,6 +52,8 @@ export interface MetricsContextType {
   aggregateMetrics: MetricWithStats[];
   setSelectedParams: (params: string[]) => void;
   refreshMetrics: () => Promise<void>;
+  uploadData: (data: MetricData[]) => Promise<void>;
+  clearData: () => void;
 }
 
 export interface MetricData {
