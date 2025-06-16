@@ -83,36 +83,66 @@ export const getAggregateMetrics = async (
   metricSubstrings: string[]
 ): Promise<MetricWithStats[]> => {
   const metricsData = await loadMetricsFile();
-  const substringMatchCount = metricSubstrings.map((substring) => {
+  
+  const aggregateMetrics = metricSubstrings.map((substring) => {
     const matchingMetrics = metricsData.filter((metric) =>
       metric.Metric.includes(substring)
     );
-    const values = matchingMetrics.map((m) => m.Value);
+    
+    // Group by provider (EMP CID + SER CID combination) to get per-provider aggregates
+    const providerGroups = new Map<string, MetricData[]>();
+    
+    matchingMetrics.forEach((metric) => {
+      const providerKey = `${metric["EMP CID"]}-${metric["SER CID"]}`;
+      if (!providerGroups.has(providerKey)) {
+        providerGroups.set(providerKey, []);
+      }
+      providerGroups.get(providerKey)!.push(metric);
+    });
+    
+    // Calculate aggregate value per provider (sum of all subcategory values)
+    const providerAggregateValues: MetricData[] = [];
+    
+    providerGroups.forEach((metrics, providerKey) => {
+      const totalValue = metrics.reduce((sum, metric) => sum + metric.Value, 0);
+      const firstMetric = metrics[0];
+      
+      // Create an aggregate metric entry for this provider
+      const aggregateEntry: MetricData = {
+        ...firstMetric,
+        Metric: substring,
+        Value: totalValue,
+        "Metric ID": 0, // Aggregate metrics don't have specific IDs
+      };
+      
+      providerAggregateValues.push(aggregateEntry);
+    });
+    
+    const values = providerAggregateValues.map((m) => m.Value);
     const averageValue =
       values.length > 0
         ? values.reduce((sum, val) => sum + val, 0) / values.length
         : 0;
     const standardDeviation = calculateStandardDeviation(values);
-
     const medianValue = calculateMedian(values);
 
     return {
       metric: substring,
-      count: matchingMetrics.length,
+      count: providerAggregateValues.length,
       id: 0,
       averageValue,
       medianValue,
       standardDeviation,
-      values: matchingMetrics,
+      values: providerAggregateValues,
     };
   });
 
-  return substringMatchCount;
+  return aggregateMetrics;
 };
 
 export const getProviderCohorts = (
   metric: MetricWithStats
-): { top: MetricData[]; low: MetricData[] } => {
+): { top: MetricData[]; low: MetricData[]; mixed: MetricData[] } => {
   const top = [];
   const low = [];
 
@@ -137,5 +167,57 @@ export const getProviderCohorts = (
   return {
     top,
     low,
+    mixed: [], // Will be calculated at the context level
   };
+};
+
+export const getMixedProviders = (
+  allMetrics: MetricWithStats[]
+): MetricData[] => {
+  // Group all providers across all metrics
+  const providerMetricsMap = new Map<string, {
+    provider: MetricData;
+    topMetrics: string[];
+    lowMetrics: string[];
+  }>();
+
+  allMetrics.forEach((metric) => {
+    const { top, low } = getProviderCohorts(metric);
+    
+    // Track top performers
+    top.forEach((provider) => {
+      const key = `${provider["EMP CID"]}-${provider["SER CID"]}`;
+      if (!providerMetricsMap.has(key)) {
+        providerMetricsMap.set(key, {
+          provider,
+          topMetrics: [],
+          lowMetrics: []
+        });
+      }
+      providerMetricsMap.get(key)!.topMetrics.push(metric.metric);
+    });
+
+    // Track low performers
+    low.forEach((provider) => {
+      const key = `${provider["EMP CID"]}-${provider["SER CID"]}`;
+      if (!providerMetricsMap.has(key)) {
+        providerMetricsMap.set(key, {
+          provider,
+          topMetrics: [],
+          lowMetrics: []
+        });
+      }
+      providerMetricsMap.get(key)!.lowMetrics.push(metric.metric);
+    });
+  });
+
+  // Find providers who have both top and low performance metrics
+  const mixedProviders: MetricData[] = [];
+  providerMetricsMap.forEach((data) => {
+    if (data.topMetrics.length > 0 && data.lowMetrics.length > 0) {
+      mixedProviders.push(data.provider);
+    }
+  });
+
+  return mixedProviders;
 };

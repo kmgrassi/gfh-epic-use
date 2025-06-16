@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 
+import { useMetrics } from "../context/MetricsContext";
 import { useProviders } from "../context/ProvidersContext";
 import { METRIC_TITLES } from "../context/types";
 import { ProviderCard } from "./ProviderCard";
 import { ProviderCardAll } from "./ProviderCardAll";
+import { ProviderCardMixed } from "./ProviderCardMixed";
 
 export const ProviderCohorts: React.FC = () => {
   const {
@@ -17,15 +19,19 @@ export const ProviderCohorts: React.FC = () => {
     lowCommunications,
     topAll,
     lowAll,
+    mixedAll,
   } = useProviders();
 
+  const { metrics, aggregateMetrics } = useMetrics();
+
   const [selectedMetric, setSelectedMetric] = useState<
-    keyof typeof METRIC_TITLES | "ALL"
+    keyof typeof METRIC_TITLES | "ALL" | "MIXED"
   >("ALL");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const metricLabels = {
     ALL: "All",
+    MIXED: "Mixed",
     ORDERS: "Orders",
     IN_BASKET: "In Basket",
     DOCUMENTATION: "Documentation",
@@ -33,28 +39,32 @@ export const ProviderCohorts: React.FC = () => {
   };
 
   const getProvidersForMetric = (
-    metric: keyof typeof METRIC_TITLES | "ALL"
+    metric: keyof typeof METRIC_TITLES | "ALL" | "MIXED"
   ) => {
     switch (metric) {
       case "ALL":
-        return { top: topAll, low: lowAll };
+        return { top: topAll, low: lowAll, mixed: [] };
+      case "MIXED":
+        return { top: [], low: [], mixed: mixedAll };
       case "ORDERS":
-        return { top: topOrders, low: lowOrders };
+        return { top: topOrders, low: lowOrders, mixed: [] };
       case "IN_BASKET":
-        return { top: topInBasket, low: lowInBasket };
+        return { top: topInBasket, low: lowInBasket, mixed: [] };
       case "DOCUMENTATION":
-        return { top: topDocumentation, low: lowDocumentation };
+        return { top: topDocumentation, low: lowDocumentation, mixed: [] };
       case "COMMUNICATIONS":
-        return { top: topCommunications, low: lowCommunications };
+        return { top: topCommunications, low: lowCommunications, mixed: [] };
     }
   };
 
-  const handleMetricSelect = (metric: keyof typeof METRIC_TITLES) => {
+  const handleMetricSelect = (
+    metric: keyof typeof METRIC_TITLES | "ALL" | "MIXED"
+  ) => {
     setSelectedMetric(metric);
     setIsDropdownOpen(false);
   };
 
-  const { top, low } = getProvidersForMetric(selectedMetric);
+  const { top, low, mixed } = getProvidersForMetric(selectedMetric);
 
   return (
     <div className="provider-cohorts">
@@ -77,7 +87,9 @@ export const ProviderCohorts: React.FC = () => {
                   selectedMetric === key ? "selected" : ""
                 }`}
                 onClick={() =>
-                  handleMetricSelect(key as keyof typeof METRIC_TITLES)
+                  handleMetricSelect(
+                    key as keyof typeof METRIC_TITLES | "ALL" | "MIXED"
+                  )
                 }
               >
                 {label}
@@ -87,7 +99,7 @@ export const ProviderCohorts: React.FC = () => {
         )}
       </div>
       <div className="cohorts-grid">
-        {metricLabels[selectedMetric] === "ALL" ? (
+        {selectedMetric === "ALL" ? (
           <>
             <ProviderCardAll
               title={`${metricLabels[selectedMetric]} - Top Performers`}
@@ -98,6 +110,12 @@ export const ProviderCohorts: React.FC = () => {
               providers={low}
             />
           </>
+        ) : selectedMetric === "MIXED" ? (
+          <ProviderCardMixed
+            title={`${metricLabels[selectedMetric]} Performers`}
+            providers={mixed}
+            allMetrics={[...metrics, ...aggregateMetrics]}
+          />
         ) : (
           <>
             <ProviderCard

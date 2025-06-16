@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { getProviderCohorts } from "../utils/metricParser";
+import { getMixedProviders, getProviderCohorts } from "../utils/metricParser";
 import { METRIC_TITLES, MetricData, MetricWithStats } from "./types";
 
 interface ProvidersContextType {
@@ -19,6 +19,7 @@ interface ProvidersContextType {
   lowCommunications: MetricData[];
   topAll: MetricData[];
   lowAll: MetricData[];
+  mixedAll: MetricData[];
 }
 
 const ProvidersContext = createContext<ProvidersContextType | undefined>(
@@ -38,6 +39,7 @@ export const ProvidersProvider: React.FC<{
   const [lowDocumentation, setLowDocumentation] = useState<MetricData[]>([]);
   const [topCommunications, setTopCommunications] = useState<MetricData[]>([]);
   const [lowCommunications, setLowCommunications] = useState<MetricData[]>([]);
+  const [mixedAll, setMixedAll] = useState<MetricData[]>([]);
 
   const updateProviderCohorts = (
     metric: MetricWithStats,
@@ -82,6 +84,10 @@ export const ProvidersProvider: React.FC<{
           break;
       }
     });
+
+    // Calculate mixed providers from all metrics
+    const mixed = getMixedProviders(allMetrics);
+    setMixedAll(mixed);
   }, [metrics, aggregateMetrics]);
 
   // Use useMemo to compute combined arrays only when individual arrays change
@@ -114,6 +120,7 @@ export const ProvidersProvider: React.FC<{
     lowCommunications,
     topAll,
     lowAll,
+    mixedAll,
   };
 
   return (

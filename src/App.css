@@ -614,6 +614,11 @@
   color: #f44336;
 }
 
+.provider-value.no-data {
+  color: #7f8c8d;
+  font-style: italic;
+}
+
 .metric-selector {
   position: relative;
   margin-bottom: 20px;
