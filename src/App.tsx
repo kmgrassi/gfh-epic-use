@@ -3,7 +3,8 @@ import "./App.css";
 import { ParamSelect } from "./components/ParamSelect";
 import { FilteredMetricsList } from "./components/FilteredMetricsList";
 import { SelectedMetricsSummary } from "./components/SelectedMetricsSummary";
-import { getUniqueMetrics } from "./utils/metricParser";
+import { AggregateMetricsDisplay } from "./components/AggregateMetricsDisplay";
+import { getUniqueMetrics, getAggregateMetrics } from "./utils/metricParser";
 
 interface MetricCount {
   metric: string;
@@ -13,18 +14,33 @@ interface MetricCount {
   standardDeviation: number;
 }
 
+interface AggregateMetricCount {
+  metric: string;
+  count: number;
+}
+
 function App() {
   const [metrics, setMetrics] = useState<MetricCount[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedParams, setSelectedParams] = useState<string[]>([]);
+  const [aggregateCounts, setAggregateCounts] = useState<
+    AggregateMetricCount[]
+  >([]);
 
   const fetchMetrics = async () => {
     try {
       setLoading(true);
       setError(null);
-      const uniqueMetrics = await getUniqueMetrics();
+      const [uniqueMetrics, aggregateMetrics] = await Promise.all([
+        getUniqueMetrics(),
+        getAggregateMetrics([
+          "(IP) Time in In Basket per Patient per Day",
+          "(IP) Time in Documentation per Patient per Day",
+        ]),
+      ]);
       setMetrics(uniqueMetrics);
+      setAggregateCounts(aggregateMetrics.substringMatchCount);
     } catch (err) {
       setError("Failed to fetch metrics");
       console.error(err);
@@ -59,6 +75,10 @@ function App() {
           selectedParams={selectedParams}
           onParamsChange={handleParamsChange}
         />
+
+        {!loading && metrics.length > 0 && (
+          <AggregateMetricsDisplay aggregateCounts={aggregateCounts} />
+        )}
 
         {!loading && metrics.length > 0 && selectedParams.length > 0 && (
           <SelectedMetricsSummary

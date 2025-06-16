@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { getAggregateMetrics } from "../utils/metricParser";
 
 interface MetricParam {
   title: string;
-  metricId: number;
+  metricId: number | null;
 }
 
 const aggregateParams = [
@@ -11,15 +12,11 @@ const aggregateParams = [
 ];
 
 export const possibleParams: MetricParam[] = [
-  { title: "(IP) Time in Documentation per Patient per Day", metricId: 2281 },
+  { title: "(IP) Time in Documentation per Patient per Day", metricId: null },
   { title: "(IP) Time in Orders per Patient per Day", metricId: 2224 },
   {
-    title: "(IP) Time in In Basket per Patient per Day - Chart Completion",
-    metricId: 2237,
-  },
-  {
-    title: "(IP) Time in Clinical Review per Patient per Day - Patient Reports",
-    metricId: 2230,
+    title: "(IP) Time in In Basket per Patient per Day",
+    metricId: null,
   },
   { title: "(IP) Time in Communications per Patient per Day", metricId: 2282 },
 ];
@@ -35,6 +32,10 @@ export function ParamSelect({
 }: ParamSelectProps) {
   const [availableParams, setAvailableParams] =
     useState<MetricParam[]>(possibleParams);
+
+  const [aggregateMetricCounts, setAggregateMetricCounts] = useState<
+    { metric: string; count: number }[]
+  >([]);
 
   const handleSelect = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = event.target.value;
@@ -61,6 +62,17 @@ export function ParamSelect({
       );
     }
   };
+
+  const getAggregates = async () => {
+    const aggregateMetrics = await getAggregateMetrics(aggregateParams);
+    setAggregateMetricCounts(aggregateMetrics.substringMatchCount);
+  };
+
+  useEffect(() => {
+    if (selectedParams.some((param) => aggregateParams.includes(param))) {
+      getAggregates();
+    }
+  }, [selectedParams]);
 
   return (
     <div className="param-select">
