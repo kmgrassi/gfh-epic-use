@@ -42,17 +42,19 @@ export const getUniqueMetrics = (metricsData: MetricData[]): MetricCount[] => {
 
     const current = metricMap.get(key)!;
     current.count++;
-    current.values?.push(metric.Value);
+    current.values?.push(metric);
   });
 
   // Calculate statistics for each metric
   metricMap.forEach((metric) => {
     if (metric.values && metric.values.length > 0) {
       metric.averageValue =
-        metric.values.reduce((sum, val) => sum + val, 0) / metric.values.length;
-      metric.standardDeviation = calculateStandardDeviation(metric.values);
+        metric.values.reduce((sum, val) => sum + val.Value, 0) /
+        metric.values.length;
+      metric.standardDeviation = calculateStandardDeviation(
+        metric.values.map((v) => v.Value)
+      );
     }
-    delete metric.values; // Remove the values array as it's no longer needed
   });
 
   return Array.from(metricMap.values()).sort((a, b) =>
@@ -67,15 +69,7 @@ export const loadAndGetMetrics = async (): Promise<MetricCount[]> => {
 
 export const getAggregateMetrics = async (
   metricSubstrings: string[]
-): Promise<{
-  aggregateMetrics: MetricData[];
-  substringMatchCount: {
-    metric: string;
-    count: number;
-    averageValue: number;
-    standardDeviation: number;
-  }[];
-}> => {
+): Promise<MetricCount[]> => {
   const metricsData = await loadMetricsFile();
   const substringMatchCount = metricSubstrings.map((substring) => {
     const matchingMetrics = metricsData.filter((metric) =>
@@ -91,17 +85,12 @@ export const getAggregateMetrics = async (
     return {
       metric: substring,
       count: matchingMetrics.length,
+      id: 0,
       averageValue,
       standardDeviation,
+      values: matchingMetrics,
     };
   });
 
-  const aggregateMetrics = metricsData.filter((metric) =>
-    metricSubstrings.some((substring) => metric.Metric.includes(substring))
-  );
-
-  return {
-    aggregateMetrics,
-    substringMatchCount,
-  };
+  return substringMatchCount;
 };

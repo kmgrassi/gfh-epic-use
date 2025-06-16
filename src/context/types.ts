@@ -4,19 +4,12 @@ export interface MetricCount {
   id: number;
   averageValue: number;
   standardDeviation: number;
-  values?: number[]; // Optional since we delete it after calculations
+  values: MetricData[];
 }
 
 export interface MetricParam {
   title: string;
   metricId: number | null;
-}
-
-export interface AggregateMetricCount {
-  metric: string;
-  count: number;
-  averageValue: number;
-  standardDeviation: number;
 }
 
 export interface MetricsContextType {
@@ -26,7 +19,7 @@ export interface MetricsContextType {
   loading: boolean;
   error: string | null;
   selectedParams: string[];
-  aggregateCounts: AggregateMetricCount[];
+  aggregateMetrics: MetricCount[];
   setSelectedParams: (params: string[]) => void;
   refreshMetrics: () => Promise<void>;
 }

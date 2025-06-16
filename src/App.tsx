@@ -10,7 +10,7 @@ function AppContent() {
     loading,
     error,
     selectedParams,
-    aggregateCounts,
+    aggregateMetrics,
     setSelectedParams,
     filteredMetrics,
   } = useMetrics();
@@ -32,16 +32,16 @@ function AppContent() {
           filteredMetrics.map((metric) => (
             <SelectedMetricsSummary
               key={metric.metric}
-              aggregateCounts={metric}
+              aggregateMetrics={metric}
             />
           ))}
 
         {!loading &&
-          aggregateCounts.length > 0 &&
-          aggregateCounts.map((aggregateCount) => (
+          aggregateMetrics.length > 0 &&
+          aggregateMetrics.map((aggregateMetric) => (
             <SelectedMetricsSummary
-              key={aggregateCount.metric}
-              aggregateCounts={aggregateCount}
+              key={aggregateMetric.metric}
+              aggregateMetrics={aggregateMetric}
             />
           ))}
 

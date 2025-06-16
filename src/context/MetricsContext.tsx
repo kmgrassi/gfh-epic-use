@@ -1,16 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import {
-  getAggregateMetrics,
-  getUniqueMetrics,
-  loadAndGetMetrics,
-} from "../utils/metricParser";
-import {
-  AggregateMetricCount,
-  MetricCount,
-  MetricData,
-  MetricParam,
-  MetricsContextType,
-} from "./types";
+import { getAggregateMetrics, loadAndGetMetrics } from "../utils/metricParser";
+import { MetricCount, MetricParam, MetricsContextType } from "./types";
 
 const aggregateParams = [
   "(IP) Time in In Basket per Patient per Day",
@@ -40,9 +30,7 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selectedParams, setSelectedParams] = useState<string[]>(
     possibleParams.map((param) => param.title)
   );
-  const [aggregateCounts, setAggregateCounts] = useState<
-    AggregateMetricCount[]
-  >([]);
+  const [aggregateMetrics, setAggregateMetrics] = useState<MetricCount[]>([]);
 
   const filteredMetrics =
     selectedParams.length > 0
@@ -54,8 +42,6 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
     0
   );
 
-  const [aggregateMetrics, setAggregateMetrics] = useState<MetricData[]>([]);
-
   const fetchMetrics = async () => {
     try {
       setLoading(true);
@@ -65,8 +51,8 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
         getAggregateMetrics(aggregateParams),
       ]);
       setMetrics(uniqueMetrics);
-      setAggregateCounts(aggregateMetrics.substringMatchCount);
-      setAggregateMetrics(aggregateMetrics.aggregateMetrics);
+
+      setAggregateMetrics(aggregateMetrics);
     } catch (err) {
       setError("Failed to fetch metrics");
       console.error(err);
@@ -79,18 +65,12 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
     fetchMetrics();
   }, []);
 
-  useEffect(() => {
-    if (aggregateMetrics.length > 0) {
-      getUniqueMetrics(aggregateMetrics);
-    }
-  }, [aggregateMetrics]);
-
   const value = {
     metrics,
     loading,
     error,
     selectedParams,
-    aggregateCounts,
+    aggregateMetrics,
     setSelectedParams,
     refreshMetrics: fetchMetrics,
     filteredMetrics,

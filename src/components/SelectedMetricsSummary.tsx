@@ -1,4 +1,4 @@
-import { AggregateMetricCount } from "../context/types";
+import { MetricCount } from "../context/types";
 
 const titleMap = {
   "(IP) Time in Communications per Patient per Day": "Communications",
@@ -8,35 +8,35 @@ const titleMap = {
 };
 
 export function SelectedMetricsSummary({
-  aggregateCounts,
+  aggregateMetrics,
 }: {
-  aggregateCounts: AggregateMetricCount;
+  aggregateMetrics: MetricCount;
 }) {
   return (
     <div className="selected-metrics-summary">
       <div className="summary-item">
         <span className="summary-label">Total Metrics:</span>
         <span className="summary-value">
-          {titleMap[aggregateCounts.metric as keyof typeof titleMap] ||
-            aggregateCounts.metric}
+          {titleMap[aggregateMetrics.metric as keyof typeof titleMap] ||
+            aggregateMetrics.metric}
         </span>
       </div>
       <div className="summary-item">
         <span className="summary-label">Total Entries:</span>
         <span className="summary-value">
-          {aggregateCounts.count.toLocaleString()}
+          {aggregateMetrics.count.toLocaleString()}
         </span>
       </div>
       <div className="summary-item">
         <span className="summary-label">Average Value:</span>
         <span className="summary-value">
-          {aggregateCounts.averageValue.toFixed(2)}
+          {aggregateMetrics.averageValue.toFixed(2)}
         </span>
       </div>
       <div className="summary-item">
         <span className="summary-label">Average Std Dev:</span>
         <span className="summary-value">
-          {aggregateCounts.standardDeviation.toFixed(2)}
+          {aggregateMetrics.standardDeviation.toFixed(2)}
         </span>
       </div>
     </div>
