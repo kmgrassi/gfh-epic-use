@@ -8,8 +8,8 @@ export const METRIC_TITLES = {
 // Outpatient-specific metric titles
 export const OUTPATIENT_METRIC_TITLES = {
   ORDERS: "Time in Orders per Day",
-  IN_BASKET: "Time in In Basket per Day",
-  DOCUMENTATION: "Time in Notes per Day",
+  IN_BASKET: "In Basket", // Aggregated In Basket metrics
+  DOCUMENTATION: "Notes", // Aggregated Notes metrics
   COMMUNICATIONS: "Secure Chat Messages Received per Day",
 } as const;
 

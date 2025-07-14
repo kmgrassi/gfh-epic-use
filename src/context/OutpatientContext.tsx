@@ -7,15 +7,7 @@ import React, {
   useState,
 } from "react";
 import { getMixedProviders, getProviderCohorts } from "../utils/metricParser";
-import { MetricData, MetricWithStats } from "./types";
-
-// Outpatient-specific metric titles
-export const OUTPATIENT_METRIC_TITLES = {
-  ORDERS: "Time in Orders per Day",
-  IN_BASKET: "In Basket", // Aggregated In Basket metrics
-  DOCUMENTATION: "Notes", // Aggregated Notes metrics
-  COMMUNICATIONS: "Secure Chat Messages Received per Day",
-} as const;
+import { MetricData, MetricWithStats, OUTPATIENT_METRIC_TITLES } from "./types";
 
 interface OutpatientContextType {
   topOrders: MetricData[];

@@ -27,11 +27,7 @@ function AppContent() {
         <FileUpload onDataUploaded={uploadData} loading={loading} />
 
         {!loading &&
-          ((dataType === "Outpatient"
-            ? [...filteredMetrics, ...aggregateMetrics]
-            : filteredMetrics
-          ).length > 0 ||
-            (dataType === "Inpatient" && aggregateMetrics.length > 0)) && (
+          (aggregateMetrics.length > 0 || filteredMetrics.length > 0) && (
             <DataTypeHeader dataType={dataType} />
           )}
 
@@ -44,14 +40,8 @@ function AppContent() {
           <AggregateMetricsDisplay aggregateCounts={aggregateCounts} />
         )} */}
         {!loading &&
-          (dataType === "Outpatient"
-            ? [...filteredMetrics, ...aggregateMetrics]
-            : filteredMetrics
-          ).length > 0 &&
-          (dataType === "Outpatient"
-            ? [...filteredMetrics, ...aggregateMetrics]
-            : filteredMetrics
-          ).map((metric) => (
+          aggregateMetrics.length > 0 &&
+          aggregateMetrics.map((metric) => (
             <SelectedMetricsSummary
               key={metric.metric}
               aggregateMetrics={metric}
@@ -59,12 +49,11 @@ function AppContent() {
           ))}
 
         {!loading &&
-          dataType === "Inpatient" &&
-          aggregateMetrics.length > 0 &&
-          aggregateMetrics.map((aggregateMetric) => (
+          filteredMetrics.length > 0 &&
+          filteredMetrics.map((metric) => (
             <SelectedMetricsSummary
-              key={aggregateMetric.metric}
-              aggregateMetrics={aggregateMetric}
+              key={metric.metric}
+              aggregateMetrics={metric}
             />
           ))}
 

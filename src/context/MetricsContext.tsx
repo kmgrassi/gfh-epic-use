@@ -39,19 +39,19 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
   const filteredMetrics =
     selectedParams.length > 0
       ? metrics.filter((metric) => {
-          // For outpatient data, exclude individual In Basket and Notes subcategories
-          // since we want to show the aggregated versions instead
+          // For outpatient data, exclude individual In Basket and Notes metrics
+          // since we want to show only the aggregated versions
           if (dataType === "Outpatient") {
             return selectedParams.some((param) => {
-              if (param === "Time in In Basket per Day") {
-                // Only show the main "Time in In Basket per Day" metric, not subcategories
-                return metric.metric === "Time in In Basket per Day";
-              } else if (param === "Time in Notes per Day") {
-                // Only show the main "Time in Notes per Day" metric, not subcategories
-                return metric.metric === "Time in Notes per Day";
-              } else {
-                return metric.metric === param;
+              // Exclude individual In Basket and Notes metrics
+              if (
+                metric.metric.includes("In Basket") ||
+                metric.metric.includes("Notes")
+              ) {
+                return false;
               }
+              // Include Orders and Communications metrics
+              return metric.metric === param;
             });
           } else {
             // For inpatient data, use exact matching
