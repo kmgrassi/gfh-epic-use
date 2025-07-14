@@ -54,7 +54,7 @@ const ProviderCohortsContent: React.FC<ProviderCohortsContentProps> = ({
     topAll,
     lowAll,
     mixedAll,
-    searchTerm,
+
     setSearchTerm,
     isFiltering,
   } = providersContext;
