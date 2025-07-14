@@ -4,6 +4,7 @@ import { FileUpload } from "./components/FileUpload";
 import { ParamSelect } from "./components/ParamSelect";
 import { ProviderCohorts } from "./components/ProviderCohorts";
 import { SelectedMetricsSummary } from "./components/SelectedMetricsSummary";
+import { DepartmentProvider, useDepartment } from "./context/DepartmentContext";
 import { MetricsProvider, useMetrics } from "./context/MetricsContext";
 import { OutpatientProvider } from "./context/OutpatientContext";
 import { ProvidersProvider } from "./context/ProvidersContext";
@@ -20,6 +21,11 @@ function AppContent() {
     dataType,
   } = useMetrics();
 
+  const {
+    filteredMetrics: departmentFilteredMetrics,
+    filteredAggregateMetrics: departmentFilteredAggregateMetrics,
+  } = useDepartment();
+
   return (
     <div className="App">
       <header className="App-header">
@@ -27,7 +33,7 @@ function AppContent() {
         <FileUpload onDataUploaded={uploadData} loading={loading} />
 
         {!loading &&
-          (aggregateMetrics.length > 0 || filteredMetrics.length > 0) && (
+          (filteredMetrics.length > 0 || aggregateMetrics.length > 0) && (
             <DataTypeHeader dataType={dataType} />
           )}
 
@@ -35,10 +41,7 @@ function AppContent() {
           selectedParams={selectedParams}
           onParamsChange={setSelectedParams}
         />
-        {/* 
-        {!loading && metrics.length > 0 && (
-          <AggregateMetricsDisplay aggregateCounts={aggregateCounts} />
-        )} */}
+
         {!loading &&
           aggregateMetrics.length > 0 &&
           aggregateMetrics.map((metric) => (
@@ -62,15 +65,15 @@ function AppContent() {
 
       {dataType === "Inpatient" ? (
         <ProvidersProvider
-          metrics={filteredMetrics}
-          aggregateMetrics={aggregateMetrics}
+          metrics={departmentFilteredMetrics}
+          aggregateMetrics={departmentFilteredAggregateMetrics}
         >
           <ProviderCohorts />
         </ProvidersProvider>
       ) : (
         <OutpatientProvider
-          metrics={filteredMetrics}
-          aggregateMetrics={aggregateMetrics}
+          metrics={departmentFilteredMetrics}
+          aggregateMetrics={departmentFilteredAggregateMetrics}
         >
           <ProviderCohorts />
         </OutpatientProvider>
@@ -79,10 +82,20 @@ function AppContent() {
   );
 }
 
+function AppWithDepartmentProvider() {
+  const { metrics, aggregateMetrics } = useMetrics();
+
+  return (
+    <DepartmentProvider metrics={metrics} aggregateMetrics={aggregateMetrics}>
+      <AppContent />
+    </DepartmentProvider>
+  );
+}
+
 function App() {
   return (
     <MetricsProvider>
-      <AppContent />
+      <AppWithDepartmentProvider />
     </MetricsProvider>
   );
 }

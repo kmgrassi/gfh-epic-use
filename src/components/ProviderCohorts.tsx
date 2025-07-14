@@ -2,6 +2,7 @@ import React, { useState } from "react";
 
 import { useMetrics } from "../context/MetricsContext";
 import { METRIC_TITLES, OUTPATIENT_METRIC_TITLES } from "../context/types";
+import { DepartmentFilter } from "./DepartmentFilter";
 import { ProviderCard } from "./ProviderCard";
 import { ProviderCardAll } from "./ProviderCardAll";
 import { ProviderCardMixed } from "./ProviderCardMixed";
@@ -156,6 +157,7 @@ const ProviderCohortsContent: React.FC<ProviderCohortsContentProps> = ({
         placeholder="Search providers by first or last name..."
         isFiltering={isFiltering}
       />
+      <DepartmentFilter />
 
       <div
         className={`cohorts-grid ${
