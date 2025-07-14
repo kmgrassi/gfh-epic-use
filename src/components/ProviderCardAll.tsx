@@ -17,7 +17,6 @@ export const ProviderCardAll: React.FC<ProviderCardAllProps> = ({
   title,
   providers,
 }) => {
-  console.log("here");
   const [groupedProviders, setGroupedProviders] = useState<
     Record<string, MetricData[]>
   >({});
@@ -52,8 +51,6 @@ export const ProviderCardAll: React.FC<ProviderCardAllProps> = ({
     }
     return count > 1;
   };
-
-  console.log(groupedProviders);
 
   return (
     <div className="provider-card">

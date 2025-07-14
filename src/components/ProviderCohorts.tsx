@@ -6,6 +6,7 @@ import { METRIC_TITLES } from "../context/types";
 import { ProviderCard } from "./ProviderCard";
 import { ProviderCardAll } from "./ProviderCardAll";
 import { ProviderCardMixed } from "./ProviderCardMixed";
+import { ProviderSearch } from "./ProviderSearch";
 
 export const ProviderCohorts: React.FC = () => {
   const {
@@ -20,6 +21,9 @@ export const ProviderCohorts: React.FC = () => {
     topAll,
     lowAll,
     mixedAll,
+
+    setSearchTerm,
+    isFiltering,
   } = useProviders();
 
   const { metrics, aggregateMetrics } = useMetrics();
@@ -28,6 +32,7 @@ export const ProviderCohorts: React.FC = () => {
     keyof typeof METRIC_TITLES | "ALL" | "MIXED"
   >("ALL");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const metricLabels = {
     ALL: "All",
@@ -57,11 +62,16 @@ export const ProviderCohorts: React.FC = () => {
     }
   };
 
-  const handleMetricSelect = (
+  const handleMetricSelect = async (
     metric: keyof typeof METRIC_TITLES | "ALL" | "MIXED"
   ) => {
+    setIsLoading(true);
     setSelectedMetric(metric);
     setIsDropdownOpen(false);
+
+    // Add a small delay to show the loading state
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    setIsLoading(false);
   };
 
   const { top, low, mixed } = getProvidersForMetric(selectedMetric);
@@ -70,15 +80,27 @@ export const ProviderCohorts: React.FC = () => {
     <div className="provider-cohorts">
       <div className="metric-selector">
         <button
-          className="dropdown-button"
+          className={`dropdown-button ${isLoading ? "loading" : ""}`}
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          disabled={isLoading}
         >
-          {metricLabels[selectedMetric]} Metrics
-          <span className={`dropdown-arrow ${isDropdownOpen ? "open" : ""}`}>
-            ▼
-          </span>
+          {isLoading ? (
+            <>
+              <span className="loading-spinner"></span>
+              Loading...
+            </>
+          ) : (
+            <>
+              {metricLabels[selectedMetric]} Metrics
+              <span
+                className={`dropdown-arrow ${isDropdownOpen ? "open" : ""}`}
+              >
+                ▼
+              </span>
+            </>
+          )}
         </button>
-        {isDropdownOpen && (
+        {isDropdownOpen && !isLoading && (
           <div className="dropdown-menu">
             {Object.entries(metricLabels).map(([key, label]) => (
               <button
@@ -98,8 +120,24 @@ export const ProviderCohorts: React.FC = () => {
           </div>
         )}
       </div>
-      <div className={`cohorts-grid ${selectedMetric === "MIXED" ? "centered" : ""}`}>
-        {selectedMetric === "ALL" ? (
+
+      <ProviderSearch
+        onSearchChange={setSearchTerm}
+        placeholder="Search providers by first or last name..."
+        isFiltering={isFiltering}
+      />
+
+      <div
+        className={`cohorts-grid ${
+          selectedMetric === "MIXED" ? "centered" : ""
+        }`}
+      >
+        {isLoading ? (
+          <div className="loading-container">
+            <div className="loading-spinner large"></div>
+            <p>Loading providers...</p>
+          </div>
+        ) : selectedMetric === "ALL" ? (
           <>
             <ProviderCardAll
               title={`${metricLabels[selectedMetric]} - Top Performers`}
