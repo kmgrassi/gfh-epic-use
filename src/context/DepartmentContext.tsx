@@ -45,6 +45,7 @@ export const DepartmentProvider: React.FC<{
     });
 
     const uniqueDepartments = Array.from(departmentSet).sort();
+
     setDepartments(uniqueDepartments);
 
     // Auto-select all departments only on initial load (when departments array is empty)
@@ -63,16 +64,18 @@ export const DepartmentProvider: React.FC<{
         return metricsToFilter;
       }
 
-      return metricsToFilter
+      const filtered = metricsToFilter
         .map((metric) => {
           const filteredValues = metric.values.filter((value) => {
             const department = value.Department || value["Login Department"];
-            return (
-              department && selectedDepartments.includes(department.trim())
-            );
+            const isIncluded =
+              department && selectedDepartments.includes(department.trim());
+
+            return isIncluded;
           });
 
           if (filteredValues.length === 0) {
+            console.log(`No values remain for metric: ${metric.metric}`);
             return null;
           }
 
@@ -93,6 +96,8 @@ export const DepartmentProvider: React.FC<{
           };
         })
         .filter((metric): metric is MetricWithStats => metric !== null);
+
+      return filtered;
     },
     [selectedDepartments, departments.length]
   );
@@ -117,15 +122,17 @@ export const DepartmentProvider: React.FC<{
   };
 
   // Apply department filtering
-  const filteredMetrics = useMemo(
-    () => filterMetricsByDepartments(metrics),
-    [filterMetricsByDepartments, metrics]
-  );
+  const filteredMetrics = useMemo(() => {
+    const result = filterMetricsByDepartments(metrics);
 
-  const filteredAggregateMetrics = useMemo(
-    () => filterMetricsByDepartments(aggregateMetrics),
-    [filterMetricsByDepartments, aggregateMetrics]
-  );
+    return result;
+  }, [filterMetricsByDepartments, metrics]);
+
+  const filteredAggregateMetrics = useMemo(() => {
+    const result = filterMetricsByDepartments(aggregateMetrics);
+
+    return result;
+  }, [filterMetricsByDepartments, aggregateMetrics]);
 
   // Track filtering state
   useEffect(() => {

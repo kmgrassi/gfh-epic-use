@@ -1125,6 +1125,47 @@
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
+.department-search-input.loading {
+  border-color: #f39c12;
+  box-shadow: 0 0 0 2px rgba(243, 156, 18, 0.2);
+}
+
+.department-search .search-status {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #61dafb;
+  font-style: italic;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.department-search .search-status .loading-spinner {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid #61dafb;
+  border-top: 1.5px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.department-apply-section {
+  padding: 12px 16px;
+  border-bottom: 1px solid #3b4049;
+  background-color: #2c3e50;
+  display: flex;
+  justify-content: center;
+}
+
+.department-apply-section .department-submit-btn {
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .department-list {
   max-height: 200px;
   overflow-y: auto;
@@ -1153,6 +1194,83 @@
   color: #95a5a6;
   font-style: italic;
   font-size: 14px;
+}
+
+.department-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #3b4049;
+  background-color: #3b4049;
+}
+
+.department-summary {
+  color: #61dafb;
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.department-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+.department-submit-btn {
+  padding: 6px 12px;
+  border: 1px solid #27ae60;
+  background: #27ae60;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.department-submit-btn:hover {
+  background: #229954;
+  border-color: #229954;
+}
+
+.department-submit-btn.loading {
+  background: #34495e;
+  border-color: #34495e;
+  cursor: not-allowed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.department-submit-btn.loading:hover {
+  background: #34495e;
+  border-color: #34495e;
+}
+
+.department-submit-btn .loading-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid white;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.department-cancel-btn {
+  padding: 6px 12px;
+  border: 1px solid #95a5a6;
+  background: #282c34;
+  color: #95a5a6;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.department-cancel-btn:hover {
+  background: #95a5a6;
+  color: #282c34;
 }
 
 .filter-summary {
