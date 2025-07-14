@@ -1,14 +1,46 @@
 import React, { useState } from "react";
 
 import { useMetrics } from "../context/MetricsContext";
-import { useProviders } from "../context/ProvidersContext";
-import { METRIC_TITLES } from "../context/types";
+import { METRIC_TITLES, OUTPATIENT_METRIC_TITLES } from "../context/types";
 import { ProviderCard } from "./ProviderCard";
 import { ProviderCardAll } from "./ProviderCardAll";
 import { ProviderCardMixed } from "./ProviderCardMixed";
 import { ProviderSearch } from "./ProviderSearch";
 
-export const ProviderCohorts: React.FC = () => {
+// Wrapper components to handle context availability
+const InpatientProviderCohorts: React.FC = () => {
+  const { useProviders } = require("../context/ProvidersContext");
+  const providersContext = useProviders();
+  return (
+    <ProviderCohortsContent
+      providersContext={providersContext}
+      metricTitles={METRIC_TITLES}
+    />
+  );
+};
+
+const OutpatientProviderCohorts: React.FC = () => {
+  const { useOutpatient } = require("../context/OutpatientContext");
+  const providersContext = useOutpatient();
+  return (
+    <ProviderCohortsContent
+      providersContext={providersContext}
+      metricTitles={OUTPATIENT_METRIC_TITLES}
+    />
+  );
+};
+
+interface ProviderCohortsContentProps {
+  providersContext: any;
+  metricTitles: typeof METRIC_TITLES | typeof OUTPATIENT_METRIC_TITLES;
+}
+
+const ProviderCohortsContent: React.FC<ProviderCohortsContentProps> = ({
+  providersContext,
+  metricTitles,
+}) => {
+  const { metrics, aggregateMetrics } = useMetrics();
+
   const {
     topOrders,
     topInBasket,
@@ -21,15 +53,13 @@ export const ProviderCohorts: React.FC = () => {
     topAll,
     lowAll,
     mixedAll,
-
+    searchTerm,
     setSearchTerm,
     isFiltering,
-  } = useProviders();
-
-  const { metrics, aggregateMetrics } = useMetrics();
+  } = providersContext;
 
   const [selectedMetric, setSelectedMetric] = useState<
-    keyof typeof METRIC_TITLES | "ALL" | "MIXED"
+    keyof typeof metricTitles | "ALL" | "MIXED"
   >("ALL");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,7 +74,7 @@ export const ProviderCohorts: React.FC = () => {
   };
 
   const getProvidersForMetric = (
-    metric: keyof typeof METRIC_TITLES | "ALL" | "MIXED"
+    metric: keyof typeof metricTitles | "ALL" | "MIXED"
   ) => {
     switch (metric) {
       case "ALL":
@@ -63,7 +93,7 @@ export const ProviderCohorts: React.FC = () => {
   };
 
   const handleMetricSelect = async (
-    metric: keyof typeof METRIC_TITLES | "ALL" | "MIXED"
+    metric: keyof typeof metricTitles | "ALL" | "MIXED"
   ) => {
     setIsLoading(true);
     setSelectedMetric(metric);
@@ -110,7 +140,7 @@ export const ProviderCohorts: React.FC = () => {
                 }`}
                 onClick={() =>
                   handleMetricSelect(
-                    key as keyof typeof METRIC_TITLES | "ALL" | "MIXED"
+                    key as keyof typeof metricTitles | "ALL" | "MIXED"
                   )
                 }
               >
@@ -142,10 +172,12 @@ export const ProviderCohorts: React.FC = () => {
             <ProviderCardAll
               title={`${metricLabels[selectedMetric]} - Top Performers`}
               providers={top}
+              metricTitles={metricTitles}
             />
             <ProviderCardAll
               title={`${metricLabels[selectedMetric]} - Low Performers`}
               providers={low}
+              metricTitles={metricTitles}
             />
           </>
         ) : selectedMetric === "MIXED" ? (
@@ -153,6 +185,7 @@ export const ProviderCohorts: React.FC = () => {
             title={`${metricLabels[selectedMetric]} Performers`}
             providers={mixed}
             allMetrics={[...metrics, ...aggregateMetrics]}
+            metricTitles={metricTitles}
           />
         ) : (
           <>
@@ -169,4 +202,15 @@ export const ProviderCohorts: React.FC = () => {
       </div>
     </div>
   );
+};
+
+// Main component that determines which wrapper to use
+export const ProviderCohorts: React.FC = () => {
+  const { dataType } = useMetrics();
+
+  if (dataType === "Inpatient") {
+    return <InpatientProviderCohorts />;
+  } else {
+    return <OutpatientProviderCohorts />;
+  }
 };

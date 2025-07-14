@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import {
+  detectDataType,
   getAggregateMetrics,
   getMetricsData,
   getUniqueMetrics,
@@ -9,6 +10,8 @@ import {
   MetricData,
   MetricsContextType,
   MetricWithStats,
+  outpatientAggregateParams,
+  outpatientPossibleParams,
   possibleParams,
 } from "./types";
 
@@ -22,19 +25,39 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
   const [metrics, setMetrics] = useState<MetricWithStats[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedParams, setSelectedParams] = useState<string[]>(
-    possibleParams.map((param) => param.title)
-  );
+  const [selectedParams, setSelectedParams] = useState<string[]>([]);
   const [aggregateMetrics, setAggregateMetrics] = useState<MetricWithStats[]>(
     []
   );
   const [uploadedMetricsData, setUploadedMetricsData] = useState<
     MetricData[] | null
   >(null);
+  const [dataType, setDataType] = useState<"Inpatient" | "Outpatient">(
+    "Outpatient"
+  );
 
   const filteredMetrics =
     selectedParams.length > 0
-      ? metrics.filter((metric) => selectedParams.includes(metric.metric))
+      ? metrics.filter((metric) => {
+          // For outpatient data, exclude individual In Basket and Notes subcategories
+          // since we want to show the aggregated versions instead
+          if (dataType === "Outpatient") {
+            return selectedParams.some((param) => {
+              if (param === "Time in In Basket per Day") {
+                // Only show the main "Time in In Basket per Day" metric, not subcategories
+                return metric.metric === "Time in In Basket per Day";
+              } else if (param === "Time in Notes per Day") {
+                // Only show the main "Time in Notes per Day" metric, not subcategories
+                return metric.metric === "Time in Notes per Day";
+              } else {
+                return metric.metric === param;
+              }
+            });
+          } else {
+            // For inpatient data, use exact matching
+            return selectedParams.includes(metric.metric);
+          }
+        })
       : metrics;
 
   const totalCount = filteredMetrics.reduce(
@@ -50,9 +73,25 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
       // Get the metrics data (either uploaded or default)
       const metricsData = await getMetricsData(uploadedMetricsData);
 
+      // Detect data type
+      const detectedDataType = detectDataType(metricsData);
+      setDataType(detectedDataType);
+
+      // Set appropriate parameters based on data type
+      const appropriateParams =
+        detectedDataType === "Inpatient"
+          ? possibleParams.map((param) => param.title)
+          : outpatientPossibleParams.map((param) => param.title);
+      setSelectedParams(appropriateParams);
+
       const [uniqueMetrics, aggregate] = await Promise.all([
         Promise.resolve(getUniqueMetrics(metricsData)),
-        getAggregateMetrics(aggregateParams, metricsData),
+        getAggregateMetrics(
+          detectedDataType === "Inpatient"
+            ? aggregateParams
+            : outpatientAggregateParams,
+          metricsData
+        ),
       ]);
 
       setMetrics(uniqueMetrics);
@@ -92,6 +131,7 @@ export const MetricsProvider: React.FC<{ children: React.ReactNode }> = ({
     totalCount,
     uploadData,
     clearData,
+    dataType,
   };
 
   return (

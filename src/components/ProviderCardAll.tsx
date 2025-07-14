@@ -1,27 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { METRIC_TITLES, MetricData, titleMap } from "../context/types";
+import { MetricData, titleMap } from "../context/types";
 
 interface ProviderCardAllProps {
   title: string;
   providers: MetricData[];
+  metricTitles: {
+    ORDERS: string;
+    IN_BASKET: string;
+    DOCUMENTATION: string;
+    COMMUNICATIONS: string;
+  };
 }
-
-const METRIC_ORDER = [
-  METRIC_TITLES.ORDERS,
-  METRIC_TITLES.IN_BASKET,
-  METRIC_TITLES.DOCUMENTATION,
-  METRIC_TITLES.COMMUNICATIONS,
-];
 
 export const ProviderCardAll: React.FC<ProviderCardAllProps> = ({
   title,
   providers,
+  metricTitles,
 }) => {
   const [groupedProviders, setGroupedProviders] = useState<
     Record<string, MetricData[]>
   >({});
 
   const isTopPerformer = title.includes("Top");
+
+  const METRIC_ORDER = [
+    metricTitles.ORDERS,
+    metricTitles.IN_BASKET,
+    metricTitles.DOCUMENTATION,
+    metricTitles.COMMUNICATIONS,
+  ];
 
   useEffect(() => {
     const grouped = providers.reduce((acc, provider) => {

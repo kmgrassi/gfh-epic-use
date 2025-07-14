@@ -964,3 +964,34 @@
   color: #61dafb;
   font-style: italic;
 }
+
+.data-type-header {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.data-type-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.data-type-badge:hover {
+  transform: translateY(-1px);
+}
+
+.data-type-icon {
+  font-size: 1.2rem;
+}
+
+.data-type-text {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}

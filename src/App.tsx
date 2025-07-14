@@ -1,9 +1,11 @@
 import "./App.css";
+import { DataTypeHeader } from "./components/DataTypeHeader";
 import { FileUpload } from "./components/FileUpload";
 import { ParamSelect } from "./components/ParamSelect";
 import { ProviderCohorts } from "./components/ProviderCohorts";
 import { SelectedMetricsSummary } from "./components/SelectedMetricsSummary";
 import { MetricsProvider, useMetrics } from "./context/MetricsContext";
+import { OutpatientProvider } from "./context/OutpatientContext";
 import { ProvidersProvider } from "./context/ProvidersContext";
 
 function AppContent() {
@@ -15,6 +17,7 @@ function AppContent() {
     setSelectedParams,
     filteredMetrics,
     uploadData,
+    dataType,
   } = useMetrics();
 
   return (
@@ -22,6 +25,15 @@ function AppContent() {
       <header className="App-header">
         <h1>Metrics Viewer</h1>
         <FileUpload onDataUploaded={uploadData} loading={loading} />
+
+        {!loading &&
+          ((dataType === "Outpatient"
+            ? [...filteredMetrics, ...aggregateMetrics]
+            : filteredMetrics
+          ).length > 0 ||
+            (dataType === "Inpatient" && aggregateMetrics.length > 0)) && (
+            <DataTypeHeader dataType={dataType} />
+          )}
 
         <ParamSelect
           selectedParams={selectedParams}
@@ -32,8 +44,14 @@ function AppContent() {
           <AggregateMetricsDisplay aggregateCounts={aggregateCounts} />
         )} */}
         {!loading &&
-          filteredMetrics.length > 0 &&
-          filteredMetrics.map((metric) => (
+          (dataType === "Outpatient"
+            ? [...filteredMetrics, ...aggregateMetrics]
+            : filteredMetrics
+          ).length > 0 &&
+          (dataType === "Outpatient"
+            ? [...filteredMetrics, ...aggregateMetrics]
+            : filteredMetrics
+          ).map((metric) => (
             <SelectedMetricsSummary
               key={metric.metric}
               aggregateMetrics={metric}
@@ -41,6 +59,7 @@ function AppContent() {
           ))}
 
         {!loading &&
+          dataType === "Inpatient" &&
           aggregateMetrics.length > 0 &&
           aggregateMetrics.map((aggregateMetric) => (
             <SelectedMetricsSummary
@@ -51,12 +70,22 @@ function AppContent() {
 
         {error && <p className="error">{error}</p>}
       </header>
-      <ProvidersProvider
-        metrics={filteredMetrics}
-        aggregateMetrics={aggregateMetrics}
-      >
-        <ProviderCohorts />
-      </ProvidersProvider>
+
+      {dataType === "Inpatient" ? (
+        <ProvidersProvider
+          metrics={filteredMetrics}
+          aggregateMetrics={aggregateMetrics}
+        >
+          <ProviderCohorts />
+        </ProvidersProvider>
+      ) : (
+        <OutpatientProvider
+          metrics={filteredMetrics}
+          aggregateMetrics={aggregateMetrics}
+        >
+          <ProviderCohorts />
+        </OutpatientProvider>
+      )}
     </div>
   );
 }

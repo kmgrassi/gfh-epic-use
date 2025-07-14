@@ -13,13 +13,34 @@ export const loadDefaultMetricsFile = async (): Promise<MetricData[]> => {
   }
 };
 
-export const getMetricsData = async (uploadedData: MetricData[] | null): Promise<MetricData[]> => {
+export const getMetricsData = async (
+  uploadedData: MetricData[] | null
+): Promise<MetricData[]> => {
   // If we have uploaded data, use it instead of fetching from file
   if (uploadedData) {
     return uploadedData;
   }
-  
+
   return await loadDefaultMetricsFile();
+};
+
+export const detectDataType = (
+  metricsData: MetricData[]
+): "Inpatient" | "Outpatient" => {
+  if (!metricsData) {
+    return "Outpatient";
+  }
+
+  if (metricsData.length === 0) {
+    return "Outpatient"; // Default fallback
+  }
+
+  // Check if any metric contains "(IP)" substring
+  const hasInpatientData = metricsData.some(
+    (metric) => metric.Metric && metric.Metric.includes("(IP)")
+  );
+
+  return hasInpatientData ? "Inpatient" : "Outpatient";
 };
 
 const calculateStandardDeviation = (values: number[]): number => {
@@ -103,18 +124,19 @@ export const getAggregateMetrics = async (
       providerGroups.get(providerKey)!.push(metric);
     });
 
-    // Calculate aggregate value per provider (sum of all subcategory values)
+    // Calculate aggregate value per provider (average of all subcategory values)
     const providerAggregateValues: MetricData[] = [];
 
     providerGroups.forEach((metrics, providerKey) => {
-      const totalValue = metrics.reduce((sum, metric) => sum + metric.Value, 0);
+      const averageValue =
+        metrics.reduce((sum, metric) => sum + metric.Value, 0) / metrics.length;
       const firstMetric = metrics[0];
 
       // Create an aggregate metric entry for this provider
       const aggregateEntry: MetricData = {
         ...firstMetric,
         Metric: substring,
-        Value: totalValue,
+        Value: averageValue,
         "Metric ID": 0, // Aggregate metrics don't have specific IDs
       };
 
