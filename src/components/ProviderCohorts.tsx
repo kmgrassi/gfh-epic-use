@@ -172,19 +172,19 @@ const ProviderCohortsContent: React.FC<ProviderCohortsContentProps> = ({
         ) : selectedMetric === "ALL" ? (
           <>
             <ProviderCardAll
-              title={`${metricLabels[selectedMetric]} - Top Performers`}
+              title={`${metricLabels[selectedMetric]} - Top Performers (${top.length})`}
               providers={top}
               metricTitles={metricTitles}
             />
             <ProviderCardAll
-              title={`${metricLabels[selectedMetric]} - Low Performers`}
+              title={`${metricLabels[selectedMetric]} - Low Performers (${low.length})`}
               providers={low}
               metricTitles={metricTitles}
             />
           </>
         ) : selectedMetric === "MIXED" ? (
           <ProviderCardMixed
-            title={`${metricLabels[selectedMetric]} Performers`}
+            title={`${metricLabels[selectedMetric]} Performers (${mixed.length})`}
             providers={mixed}
             allMetrics={[...metrics, ...aggregateMetrics]}
             metricTitles={metricTitles}
@@ -192,11 +192,11 @@ const ProviderCohortsContent: React.FC<ProviderCohortsContentProps> = ({
         ) : (
           <>
             <ProviderCard
-              title={`${metricLabels[selectedMetric]} - Top Performers`}
+              title={`${metricLabels[selectedMetric]} - Top Performers (${top.length})`}
               providers={top}
             />
             <ProviderCard
-              title={`${metricLabels[selectedMetric]} - Low Performers`}
+              title={`${metricLabels[selectedMetric]} - Low Performers (${low.length})`}
               providers={low}
             />
           </>
